@@ -1,0 +1,260 @@
+---
+import { allergenInfo, categoryLabels, defaultLocale, flavors, locales, type Category } from "@data/flavors";
+import "@fortawesome/fontawesome-free/css/all.min.css";
+import "../styles/global.css";
+
+const locale = defaultLocale;
+const counts: Record<Category | "all", number> = {
+  all: flavors.length,
+  gelato: flavors.filter((flavor) => flavor.category === "gelato").length,
+  sorbetto: flavors.filter((flavor) => flavor.category === "sorbetto").length,
+  extra: flavors.filter((flavor) => flavor.category === "extra").length
+};
+const categories: (Category | "all")[] = ["all", "gelato", "sorbetto", "extra"];
+const themeIconColors: Record<string, string> = {
+  cocoa: "3B2314",
+  "white-chocolate": "8B85FF",
+  "milk-chocolate": "6F3B1F",
+  milk: "4D7CFE",
+  almond: "B06F2E",
+  hazelnut: "8A4F24",
+  pistachio: "5E9F35",
+  ricotta: "3887C9",
+  amarena: "C0183F",
+  stracciatella: "523C33",
+  "nutella-coconut": "8B4A21",
+  pear: "79A928",
+  fig: "7D4AA2",
+  coconut: "1F9E8A",
+  caramel: "C46A22",
+  peanut: "A8752B",
+  vanilla: "D49A20",
+  coffee: "5C3522",
+  mulberry: "8A2B70",
+  strawberry: "D8244A",
+  raspberry: "C2185B",
+  "almond-sorbet": "B06F2E",
+  lemon: "C6A800",
+  pineapple: "D89210",
+  mandarin: "E46F1B",
+  syrup: "367BF5",
+  mango: "E28A13",
+  yogurt: "4F8EDB",
+  cream: "6C71C4",
+  cone: "B5672F",
+  "cone-granella": "8A4F24",
+  wafer: "B5793C",
+  sigaretta: "9B6A3E",
+  croissant: "C9822E"
+};
+const icons8FoodIconUrl = (slug: string, theme: string) =>
+  `https://img.icons8.com/ios/160/${themeIconColors[theme] ?? "471CFF"}/${slug}.png`;
+---
+
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Ingredienti e allergeni dei gelati, sorbetti, coni e extra di LaB Laboratorio del Gelato a Praiano."
+    />
+    <meta name="theme-color" content="#0f0733" />
+    <title>LaB Ingredienti e Allergeni</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="LaB Laboratorio del Gelato">
+        <img src="/logo-new.png" alt="LaB Laboratorio del Gelato" />
+        <span>
+          <strong>Ingredienti e allergeni</strong>
+          <small>Praiano, Amalfi Coast</small>
+        </span>
+      </a>
+
+      <nav class="language-switcher" aria-label="Lingue disponibili">
+        {
+          locales.map((item) => (
+            <button class:list={["language-button", { active: item.active }]} disabled={!item.active} title={item.label}>
+              <span>{item.short}</span>
+            </button>
+          ))
+        }
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="page-title">
+        <div class="hero-copy">
+          <h1 id="page-title">Ingredienti chiari per scegliere il tuo gelato.</h1>
+          <p>
+            Consulta ingredienti e allergeni di gelati, sorbetti, coni e extra. Le indicazioni
+            seguono il documento ingredienti per il pubblico.
+          </p>
+          <div class="hero-actions" aria-label="Azioni principali">
+            <a class="primary-action" href="#flavors">Consulta gusti</a>
+            <a class="ghost-action" href="#filters">Filtra categorie</a>
+          </div>
+          <div class="hero-proof" aria-label="Sintesi catalogo">
+            <span>
+              <strong>{counts.all}</strong>
+              gusti e extra
+            </span>
+            <span>
+              <strong>{counts.gelato}</strong>
+              gelati
+            </span>
+            <span>
+              <strong>{counts.sorbetto}</strong>
+              sorbetti
+            </span>
+          </div>
+        </div>
+        <div class="hero-mark" aria-label="LaB Laboratorio del Gelato">
+          <img class="hero-logo" src="/logo-new.png" alt="LaB Laboratorio del Gelato" width="420" height="420" />
+        </div>
+      </section>
+
+      <section class="toolbar" id="filters" aria-label="Filtro categorie">
+        <div class="category-tabs" role="tablist" aria-label="Categorie">
+          {
+            categories.map((category) => (
+              <button
+                class:list={["category-tab", { active: category === "all" }]}
+                type="button"
+                data-filter={category}
+                aria-pressed={category === "all" ? "true" : "false"}
+              >
+                <span>{categoryLabels[category][locale]}</span>
+                <small>{counts[category]}</small>
+              </button>
+            ))
+          }
+        </div>
+        <label class="search-field">
+          <span class="sr-only">Cerca gusto o ingrediente</span>
+          <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+          <input type="search" placeholder="Cerca gusto o ingrediente..." autocomplete="off" />
+        </label>
+      </section>
+
+      <section class="flavor-grid" id="flavors" aria-label="Lista ingredienti e allergeni">
+        {
+          flavors.map((flavor) => (
+            <article
+              class={`flavor-card theme-${flavor.theme}`}
+              data-category={flavor.category}
+              data-search={`${flavor.name[locale]} ${flavor.ingredients[locale].join(" ")} ${flavor.allergens
+                .map((allergen) => allergenInfo[allergen.key].label[locale])
+                .join(" ")}`.toLocaleLowerCase("it")}
+            >
+              <button class="favorite-button" type="button" aria-label={`Salva ${flavor.name[locale]}`}>
+                <i class="fa-regular fa-heart" aria-hidden="true"></i>
+              </button>
+
+              <div class="flavor-topline">
+                <div class="flavor-icon" aria-hidden="true">
+                  <img
+                    src={icons8FoodIconUrl(flavor.iconSlug, flavor.theme)}
+                    alt=""
+                    loading="lazy"
+                    width="160"
+                    height="160"
+                    decoding="async"
+                  />
+                </div>
+                <div>
+                  <p class="category-label">{categoryLabels[flavor.category][locale]}</p>
+                  <h2>{flavor.name[locale]}</h2>
+                </div>
+              </div>
+
+              <div class="allergens" aria-label={`Allergeni per ${flavor.name[locale]}`}>
+                <h3>Allergeni</h3>
+                {
+                  flavor.allergens.length > 0 ? (
+                    <div class="allergen-list">
+                      {flavor.allergens.slice(0, 2).map((allergen) => {
+                        const info = allergenInfo[allergen.key];
+                        return (
+                          <span class:list={["allergen-chip", allergen.presence]} title={info.description[locale]}>
+                            <span class="allergen-icon" aria-hidden="true">
+                              <i class={info.icon}></i>
+                            </span>
+                            <span>
+                              <strong>{info.label[locale]}</strong>
+                              <small>{allergen.presence === "contains" ? "Contiene" : "Possibile presenza"}</small>
+                              {allergen.note ? <em>{allergen.note[locale]}</em> : null}
+                            </span>
+                          </span>
+                        );
+                      })}
+                      {flavor.allergens.length > 2 ? (
+                        <span class="allergen-chip allergen-more">+{flavor.allergens.length - 2}</span>
+                      ) : null}
+                    </div>
+                  ) : (
+                    <p class="no-allergens">Nessun allergene indicato nel documento.</p>
+                  )
+                }
+              </div>
+
+              <div class="flavor-facts" aria-label={`Dettagli per ${flavor.name[locale]}`}>
+                <span>
+                  <i class="fa-solid fa-list-check" aria-hidden="true"></i>
+                  <strong>{flavor.ingredients[locale].length}</strong>
+                  <small>ingredienti</small>
+                </span>
+                <span>
+                  <i class="fa-regular fa-file-lines" aria-hidden="true"></i>
+                  <strong>{flavor.allergens.length === 0 ? "0" : flavor.allergens.length}</strong>
+                  <small>allergeni indicati</small>
+                </span>
+                <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+              </div>
+            </article>
+          ))
+        }
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>LaB Laboratorio del Gelato · Praiano</p>
+      <p>Versione italiana. Traduzioni in preparazione: English, 中文, Français.</p>
+    </footer>
+
+    <script>
+      const tabs = document.querySelectorAll("[data-filter]");
+      const cards = document.querySelectorAll("[data-category]");
+      const search = document.querySelector<HTMLInputElement>(".search-field input");
+      let activeFilter = "all";
+
+      const updateCards = () => {
+        const query = search?.value.trim().toLocaleLowerCase("it") ?? "";
+
+        cards.forEach((card) => {
+          const matchesCategory = activeFilter === "all" || card.getAttribute("data-category") === activeFilter;
+          const matchesSearch = !query || card.getAttribute("data-search")?.includes(query);
+          card.classList.toggle("is-hidden", !(matchesCategory && matchesSearch));
+        });
+      };
+
+      tabs.forEach((tab) => {
+        tab.addEventListener("click", () => {
+          activeFilter = tab.getAttribute("data-filter") ?? "all";
+
+          tabs.forEach((item) => {
+            const active = item === tab;
+            item.classList.toggle("active", active);
+            item.setAttribute("aria-pressed", active ? "true" : "false");
+          });
+
+          updateCards();
+        });
+      });
+
+      search?.addEventListener("input", updateCards);
+    </script>
+  </body>
+</html>
