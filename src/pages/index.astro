@@ -1,9 +1,19 @@
 ---
 import { allergenInfo, categoryLabels, defaultLocale, flavors, locales, type Category } from "@data/flavors";
 import "@fortawesome/fontawesome-free/css/all.min.css";
+import socialPreviewImage from "../../images/stracciatella.png";
 import "../styles/global.css";
 
 const locale = defaultLocale;
+const siteTitle = "LaB Ingredienti e Allergeni | Laboratorio del Gelato Praiano";
+const siteDescription = "Consulta ingredienti e allergeni dei gelati artigianali, sorbetti, coni ed extra di LaB Laboratorio del Gelato a Praiano.";
+const socialDescription = "Scegli il tuo gelato LaB a Praiano con schede chiare su ingredienti, allergeni e possibili tracce.";
+const socialImageAlt = "Gelato stracciatella di LaB Laboratorio del Gelato a Praiano";
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url).toString();
+const socialImageUrl = new URL(socialPreviewImage.src, Astro.site ?? Astro.url).toString();
+const socialImageType = socialPreviewImage.format === "jpg" ? "image/jpeg" : `image/${socialPreviewImage.format}`;
+const socialImageWidth = socialPreviewImage.width.toString();
+const socialImageHeight = socialPreviewImage.height.toString();
 const counts: Record<Category | "all", number> = {
   all: flavors.length,
   gelato: flavors.filter((flavor) => flavor.category === "gelato").length,
@@ -37,12 +47,29 @@ const flavorsWithImages = flavors.map((flavor) => ({
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="description"
-      content="Ingredienti e allergeni dei gelati, sorbetti, coni e extra di LaB Laboratorio del Gelato a Praiano."
-    />
+    <title>{siteTitle}</title>
+    <meta name="description" content={siteDescription} />
+    <meta name="robots" content="index, follow" />
+    <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <link rel="canonical" href={canonicalUrl} />
     <meta name="theme-color" content="#0f0733" />
-    <title>LaB Ingredienti e Allergeni</title>
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="LaB Laboratorio del Gelato" />
+    <meta property="og:locale" content="it_IT" />
+    <meta property="og:title" content={siteTitle} />
+    <meta property="og:description" content={socialDescription} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={socialImageUrl} />
+    <meta property="og:image:secure_url" content={socialImageUrl} />
+    <meta property="og:image:type" content={socialImageType} />
+    <meta property="og:image:width" content={socialImageWidth} />
+    <meta property="og:image:height" content={socialImageHeight} />
+    <meta property="og:image:alt" content={socialImageAlt} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={siteTitle} />
+    <meta name="twitter:description" content={socialDescription} />
+    <meta name="twitter:image" content={socialImageUrl} />
+    <meta name="twitter:image:alt" content={socialImageAlt} />
   </head>
   <body>
     <header class="site-header">

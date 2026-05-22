@@ -5,6 +5,7 @@ import test from "node:test";
 const dataSource = readFileSync(new URL("../src/data/flavors.ts", import.meta.url), "utf8");
 const pageSource = readFileSync(new URL("../src/pages/index.astro", import.meta.url), "utf8");
 const styleSource = readFileSync(new URL("../src/styles/global.css", import.meta.url), "utf8");
+const astroConfigSource = readFileSync(new URL("../astro.config.mjs", import.meta.url), "utf8");
 
 const flavorBlock = (id) => {
   const start = dataSource.indexOf(`id: "${id}"`);
@@ -51,6 +52,34 @@ test("cards use real flavor photos instead of external food icons", () => {
   assert.match(pageSource, /class="flavor-photo"/, "Small cards should render a real product photo");
   assert.match(pageSource, /class="dialog-photo"/, "Large detail cards should render a real product photo");
   assert.doesNotMatch(pageSource, /icons8FoodIconUrl/, "Cards should not depend on external food icons");
+});
+
+test("page exposes Google and social sharing metadata with stracciatella preview", () => {
+  assert.match(pageSource, /import socialPreviewImage from "\.\.\/\.\.\/images\/stracciatella\.png";/, "Social preview should use the stracciatella image asset");
+  assert.match(pageSource, /const siteDescription = "Consulta ingredienti e allergeni/, "Google description should be defined as concise page copy");
+  assert.match(pageSource, /const socialDescription = "Scegli il tuo gelato LaB/, "Social cards should have short sharing copy");
+  assert.match(pageSource, /<link rel="canonical" href=\{canonicalUrl\} \/>/, "Google should receive a canonical URL");
+  assert.match(pageSource, /<meta name="robots" content="index, follow" \/>/, "Search engines should be allowed to index the page");
+  assert.match(pageSource, /<meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" \/>/, "Googlebot should be allowed large previews and snippets");
+  assert.match(pageSource, /<meta property="og:type" content="website" \/>/, "Facebook should receive Open Graph type metadata");
+  assert.match(pageSource, /<meta property="og:title" content=\{siteTitle\} \/>/, "Facebook should receive an Open Graph title");
+  assert.match(pageSource, /<meta property="og:description" content=\{socialDescription\} \/>/, "Facebook should receive an Open Graph description");
+  assert.match(pageSource, /<meta property="og:image" content=\{socialImageUrl\} \/>/, "Facebook should receive the stracciatella image URL");
+  assert.match(pageSource, /const socialImageType = socialPreviewImage\.format === "jpg" \? "image\/jpeg" : `image\/\$\{socialPreviewImage\.format\}`;/, "Open Graph image MIME should normalize jpg to image/jpeg");
+  assert.match(pageSource, /<meta property="og:image:type" content=\{socialImageType\} \/>/, "Facebook should receive a valid image MIME type");
+  assert.match(pageSource, /<meta property="og:image:alt" content=\{socialImageAlt\} \/>/, "Facebook should receive accessible image alt text");
+  assert.match(pageSource, /<meta name="twitter:card" content="summary_large_image" \/>/, "Twitter should receive a large-image card type");
+  assert.match(pageSource, /<meta name="twitter:title" content=\{siteTitle\} \/>/, "Twitter should receive a card title");
+  assert.match(pageSource, /<meta name="twitter:description" content=\{socialDescription\} \/>/, "Twitter should receive a card description");
+  assert.match(pageSource, /<meta name="twitter:image" content=\{socialImageUrl\} \/>/, "Twitter should receive the stracciatella image URL");
+});
+
+test("Astro can build absolute social URLs from production deployment env", () => {
+  assert.match(astroConfigSource, /PUBLIC_SITE_URL/, "Config should support an explicit production site URL");
+  assert.match(astroConfigSource, /SITE_URL/, "Config should support a generic production site URL");
+  assert.match(astroConfigSource, /VERCEL_PROJECT_PRODUCTION_URL/, "Config should support Vercel production domains");
+  assert.match(astroConfigSource, /VERCEL_URL/, "Config should support Vercel preview domains");
+  assert.match(astroConfigSource, /site: siteUrl/, "Astro site should be configured when a deployment URL is available");
 });
 
 test("sugar syrup sorbetto uses the white scoop photo", () => {
