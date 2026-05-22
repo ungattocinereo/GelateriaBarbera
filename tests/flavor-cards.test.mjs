@@ -4,6 +4,7 @@ import test from "node:test";
 
 const dataSource = readFileSync(new URL("../src/data/flavors.ts", import.meta.url), "utf8");
 const pageSource = readFileSync(new URL("../src/pages/index.astro", import.meta.url), "utf8");
+const styleSource = readFileSync(new URL("../src/styles/global.css", import.meta.url), "utf8");
 
 const flavorBlock = (id) => {
   const start = dataSource.indexOf(`id: "${id}"`);
@@ -44,6 +45,70 @@ test("flavor cards expose full details through a tap disclosure", () => {
   assert.doesNotMatch(pageSource, /flavor\.allergens\.slice\(0,\s*2\)/, "The rendered allergen list should not be capped at two");
 });
 
+test("cards use real flavor photos instead of external food icons", () => {
+  assert.match(pageSource, /import\.meta\.glob/, "Flavor photos should be sourced from local image assets");
+  assert.match(pageSource, /imageSrc/, "Flavor items should expose a resolved photo");
+  assert.match(pageSource, /class="flavor-photo"/, "Small cards should render a real product photo");
+  assert.match(pageSource, /class="dialog-photo"/, "Large detail cards should render a real product photo");
+  assert.doesNotMatch(pageSource, /icons8FoodIconUrl/, "Cards should not depend on external food icons");
+});
+
+test("sugar syrup sorbetto uses the white scoop photo", () => {
+  assert.match(dataSource, /id:\s*"sciroppo-zucchero"/, "Sciroppo di zucchero flavor should exist");
+  assert.match(
+    pageSource,
+    /"sciroppo-zucchero":\s*flavorImageModules\[`..\/..\/images\/white-scoop\.png`\]/,
+    "Sciroppo di zucchero should reuse white-scoop.png"
+  );
+});
+
+test("detail lists stay visually minimal", () => {
+  assert.match(pageSource, /<h3>Ingredienti completi<\/h3>/, "Ingredient list heading should remain present");
+  assert.match(pageSource, /<h3>Allergeni completi<\/h3>/, "Allergen list heading should remain present");
+  assert.match(pageSource, /class="ingredient-list"/, "Ingredients should render as a list");
+  assert.match(pageSource, /class="detail-allergen-list"/, "Allergens should render as a list");
+  assert.doesNotMatch(pageSource, /detail-allergen[\s\S]*?allergen-chip/, "Detail allergens should avoid compact chip styling");
+});
+
+test("allergen icons render on compact and expanded cards", () => {
+  assert.match(
+    pageSource,
+    /<span class="allergen-icon" aria-hidden="true">[\s\S]*?<i class=\{info\.icon\}><\/i>[\s\S]*?<\/span>/,
+    "Compact allergen chips should render the configured allergen icon"
+  );
+  assert.match(
+    pageSource,
+    /<li class:list=\{\["detail-allergen", allergen\.presence\]\}>[\s\S]*?<span class="allergen-icon" aria-hidden="true">[\s\S]*?<i class=\{info\.icon\}><\/i>/,
+    "Expanded allergen rows should render the configured allergen icon"
+  );
+});
+
+test("photo stages use stable enlarged sizing", () => {
+  assert.match(
+    styleSource,
+    /\.flavor-photo\s*\{[\s\S]*?aspect-ratio:\s*1\s*;/,
+    "Small card photos should use a square stage"
+  );
+  assert.match(
+    styleSource,
+    /\.flavor-photo img\s*\{[\s\S]*?transform:\s*scale\(1\.16\);/,
+    "Small card images should be scaled up inside the stable photo stage"
+  );
+  assert.match(
+    styleSource,
+    /\.dialog-photo img\s*\{[\s\S]*?transform:\s*scale\(1\.14\);/,
+    "Expanded card images should be scaled up inside the dialog photo stage"
+  );
+});
+
+test("mobile keeps allergen icons visible", () => {
+  assert.doesNotMatch(
+    styleSource,
+    /@media \(max-width: 620px\)[\s\S]*?\.allergen-icon\s*\{[\s\S]*?display:\s*none;/,
+    "Mobile CSS should not hide allergen icons"
+  );
+});
+
 test("cards do not render an empty-allergen placeholder", () => {
   assert.doesNotMatch(
     pageSource,
@@ -52,4 +117,22 @@ test("cards do not render an empty-allergen placeholder", () => {
   );
   assert.doesNotMatch(pageSource, /class="no-allergens"/, "Cards should not render a visual empty-allergen badge");
   assert.match(pageSource, /flavor\.allergens\.length > 0/, "Allergen sections should be conditional");
+});
+
+test("mobile hero proof stays in one white row", () => {
+  assert.match(
+    styleSource,
+    /@media \(max-width: 620px\)[\s\S]*?\.hero-proof\s*\{[\s\S]*?display:\s*flex;[\s\S]*?flex-wrap:\s*nowrap;/,
+    "Mobile hero proof should stay in a single horizontal row"
+  );
+  assert.match(
+    styleSource,
+    /@media \(max-width: 620px\)[\s\S]*?\.hero-proof span\s*\{[\s\S]*?color:\s*var\(--color-pure-white\);/,
+    "Mobile hero proof labels should be white"
+  );
+  assert.match(
+    styleSource,
+    /@media \(max-width: 620px\)[\s\S]*?\.hero-proof strong\s*\{[\s\S]*?color:\s*inherit;/,
+    "Mobile hero proof numbers should inherit white"
+  );
 });

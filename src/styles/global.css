@@ -460,26 +460,23 @@ main {
 .flavor-topline {
   display: grid;
   justify-items: start;
-  gap: var(--spacing-8);
+  gap: var(--spacing-10, 10px);
 }
 
-.flavor-icon {
-  display: grid;
-  place-items: center;
-  width: 58px;
-  height: 58px;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  color: var(--card-accent);
-  filter: drop-shadow(0 9px 12px color-mix(in srgb, var(--card-accent) 14%, transparent));
+.flavor-photo {
+  width: 100%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--color-pure-white);
 }
 
-.flavor-icon img {
+.flavor-photo img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: contain;
+  transform: scale(1.16);
 }
 
 .category-label {
@@ -636,7 +633,7 @@ main {
 }
 
 .flavor-dialog {
-  width: min(760px, calc(100vw - 24px));
+  width: min(980px, calc(100vw - 24px));
   max-height: min(88vh, 900px);
   margin: auto;
   padding: 0;
@@ -654,9 +651,8 @@ main {
 .flavor-dialog-card {
   position: relative;
   display: grid;
-  gap: var(--spacing-16);
   max-height: min(88vh, 900px);
-  padding: var(--spacing-20);
+  padding: 0;
   border: 1px solid rgba(219, 211, 255, 0.92);
   border-radius: var(--radius-cards);
   background: var(--color-pure-white);
@@ -688,26 +684,38 @@ main {
 
 .dialog-topline {
   display: grid;
-  grid-template-columns: 72px minmax(0, 1fr);
-  gap: var(--spacing-12);
   align-items: center;
+  min-width: 0;
   padding-right: 44px;
 }
 
-.dialog-icon {
+.dialog-layout {
   display: grid;
-  place-items: center;
-  width: 72px;
-  height: 72px;
-  color: var(--card-accent);
-  filter: drop-shadow(0 12px 18px color-mix(in srgb, var(--card-accent) 16%, transparent));
+  grid-template-columns: minmax(280px, 0.76fr) minmax(0, 1fr);
+  min-height: 540px;
 }
 
-.dialog-icon img {
+.dialog-photo {
+  min-width: 0;
+  min-height: 100%;
+  overflow: hidden;
+  background: var(--color-pure-white);
+}
+
+.dialog-photo img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: contain;
+  transform: scale(1.14);
+}
+
+.dialog-content {
+  display: grid;
+  align-content: start;
+  gap: var(--spacing-16);
+  min-width: 0;
+  padding: var(--spacing-20);
 }
 
 .dialog-topline h2 {
@@ -793,7 +801,7 @@ main {
 .ingredient-list,
 .detail-allergen-list {
   display: grid;
-  gap: 6px;
+  gap: var(--spacing-8);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -802,10 +810,11 @@ main {
 .ingredient-list li,
 .detail-allergen {
   min-width: 0;
-  padding: 7px 8px;
-  border: 1px solid rgba(219, 211, 255, 0.7);
-  border-radius: var(--radius-elements-sm);
-  background: var(--color-snow-drift);
+  padding: 0 0 var(--spacing-8);
+  border: 0;
+  border-bottom: 1px solid rgba(219, 211, 255, 0.72);
+  border-radius: 0;
+  background: transparent;
   color: var(--color-deep-violet);
 }
 
@@ -818,13 +827,22 @@ main {
 
 .detail-allergen {
   display: grid;
-  grid-template-columns: 20px minmax(0, 1fr);
-  gap: 7px;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 8px;
   align-items: start;
 }
 
+.detail-allergen .allergen-icon {
+  width: 20px;
+  height: 20px;
+  margin-top: -1px;
+  border-radius: 999px;
+  background: var(--color-snow-drift);
+  font-size: 12px;
+}
+
 .detail-allergen.may-contain {
-  border-style: dashed;
+  border-bottom-style: dashed;
 }
 
 .detail-allergen strong,
@@ -1009,8 +1027,23 @@ main {
   }
 
   .hero-proof {
-    display: grid;
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: var(--spacing-8);
+  }
+
+  .hero-proof span {
+    flex: 1 1 0;
+    justify-content: center;
+    gap: var(--spacing-4);
+    min-width: 0;
+    padding: var(--spacing-8) 6px;
+    color: var(--color-pure-white);
+    white-space: nowrap;
+  }
+
+  .hero-proof strong {
+    color: inherit;
   }
 
   .toolbar {
@@ -1039,21 +1072,12 @@ main {
     gap: var(--spacing-8);
   }
 
-  .flavor-icon {
-    width: 48px;
-    height: 48px;
-  }
-
-  .allergen-icon {
-    display: none;
-  }
-
-  .detail-allergen .allergen-icon {
-    display: grid;
+  .flavor-photo {
+    border-radius: 10px;
   }
 
   .allergen-chip {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: 18px minmax(0, 1fr);
     padding-inline: 7px;
   }
 
@@ -1086,17 +1110,25 @@ main {
 
   .flavor-dialog-card {
     max-height: calc(100vh - 24px);
-    padding: var(--spacing-16);
+  }
+
+  .dialog-layout {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+
+  .dialog-photo {
+    height: clamp(220px, 76vw, 295px);
+    aspect-ratio: auto;
+    min-height: 0;
   }
 
   .dialog-topline {
-    grid-template-columns: 58px minmax(0, 1fr);
     padding-right: 38px;
   }
 
-  .dialog-icon {
-    width: 58px;
-    height: 58px;
+  .dialog-content {
+    padding: var(--spacing-16);
   }
 
   .dialog-topline h2 {

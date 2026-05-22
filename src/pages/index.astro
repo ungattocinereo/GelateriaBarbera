@@ -11,44 +11,25 @@ const counts: Record<Category | "all", number> = {
   extra: flavors.filter((flavor) => flavor.category === "extra").length
 };
 const categories: (Category | "all")[] = ["all", "gelato", "sorbetto", "extra"];
-const themeIconColors: Record<string, string> = {
-  cocoa: "3B2314",
-  "white-chocolate": "8B85FF",
-  "milk-chocolate": "6F3B1F",
-  milk: "4D7CFE",
-  almond: "B06F2E",
-  hazelnut: "8A4F24",
-  pistachio: "5E9F35",
-  ricotta: "3887C9",
-  amarena: "C0183F",
-  stracciatella: "523C33",
-  "nutella-coconut": "8B4A21",
-  pear: "79A928",
-  fig: "7D4AA2",
-  coconut: "1F9E8A",
-  caramel: "C46A22",
-  peanut: "A8752B",
-  vanilla: "D49A20",
-  coffee: "5C3522",
-  mulberry: "8A2B70",
-  strawberry: "D8244A",
-  raspberry: "C2185B",
-  "almond-sorbet": "B06F2E",
-  lemon: "C6A800",
-  pineapple: "D89210",
-  mandarin: "E46F1B",
-  syrup: "367BF5",
-  mango: "E28A13",
-  yogurt: "4F8EDB",
-  cream: "6C71C4",
-  cone: "B5672F",
-  "cone-granella": "8A4F24",
-  wafer: "B5793C",
-  sigaretta: "9B6A3E",
-  croissant: "C9822E"
+const flavorImageModules = import.meta.glob("../../images/*.{png,jpg,jpeg,webp}", {
+  eager: true,
+  query: "?url",
+  import: "default"
+}) as Record<string, string>;
+const flavorImageOverrides: Record<string, string | undefined> = {
+  "sciroppo-zucchero": flavorImageModules[`../../images/white-scoop.png`]
 };
-const icons8FoodIconUrl = (slug: string, theme: string) =>
-  `https://img.icons8.com/ios/160/${themeIconColors[theme] ?? "471CFF"}/${slug}.png`;
+const flavorImage = (id: string) =>
+  flavorImageOverrides[id] ??
+  flavorImageModules[`../../images/${id}.png`] ??
+  flavorImageModules[`../../images/${id}.jpg`] ??
+  flavorImageModules[`../../images/${id}.jpeg`] ??
+  flavorImageModules[`../../images/${id}.webp`] ??
+  "/gelato-texture.png";
+const flavorsWithImages = flavors.map((flavor) => ({
+  ...flavor,
+  imageSrc: flavorImage(flavor.id)
+}));
 ---
 
 <!doctype html>
@@ -141,7 +122,7 @@ const icons8FoodIconUrl = (slug: string, theme: string) =>
 
       <section class="flavor-grid" id="flavors" aria-label="Lista ingredienti e allergeni">
         {
-          flavors.map((flavor) => (
+          flavorsWithImages.map((flavor) => (
             <article
               class={`flavor-card theme-${flavor.theme}`}
               data-category={flavor.category}
@@ -160,13 +141,13 @@ const icons8FoodIconUrl = (slug: string, theme: string) =>
               ></button>
 
               <div class="flavor-topline">
-                <div class="flavor-icon" aria-hidden="true">
+                <div class="flavor-photo">
                   <img
-                    src={icons8FoodIconUrl(flavor.iconSlug, flavor.theme)}
-                    alt=""
+                    src={flavor.imageSrc}
+                    alt={`Foto di ${flavor.name[locale]}`}
                     loading="lazy"
-                    width="160"
-                    height="160"
+                    width="420"
+                    height="320"
                     decoding="async"
                   />
                 </div>
@@ -234,74 +215,79 @@ const icons8FoodIconUrl = (slug: string, theme: string) =>
                     <i class="fa-solid fa-xmark" aria-hidden="true"></i>
                   </button>
 
-                  <div class="dialog-topline">
-                    <div class="dialog-icon" aria-hidden="true">
+                  <div class="dialog-layout">
+                    <div class="dialog-photo">
                       <img
-                        src={icons8FoodIconUrl(flavor.iconSlug, flavor.theme)}
-                        alt=""
+                        src={flavor.imageSrc}
+                        alt={`Foto di ${flavor.name[locale]}`}
                         loading="lazy"
-                        width="160"
-                        height="160"
+                        width="640"
+                        height="760"
                         decoding="async"
                       />
                     </div>
-                    <div>
-                      <p class="category-label">{categoryLabels[flavor.category][locale]}</p>
-                      <h2 id={`dialog-title-${flavor.id}`}>{flavor.name[locale]}</h2>
-                    </div>
-                  </div>
 
-                  <div class:list={["dialog-facts", { "single-fact": flavor.allergens.length === 0 }]}>
-                    <span>
-                      <i class="fa-solid fa-list-check" aria-hidden="true"></i>
-                      <strong>{flavor.ingredients[locale].length}</strong>
-                      <small>ingredienti</small>
-                    </span>
-                    {
-                      flavor.allergens.length > 0 ? (
+                    <div class="dialog-content">
+                      <div class="dialog-topline">
+                        <div>
+                          <p class="category-label">{categoryLabels[flavor.category][locale]}</p>
+                          <h2 id={`dialog-title-${flavor.id}`}>{flavor.name[locale]}</h2>
+                        </div>
+                      </div>
+
+                      <div class:list={["dialog-facts", { "single-fact": flavor.allergens.length === 0 }]}>
                         <span>
-                          <i class="fa-regular fa-file-lines" aria-hidden="true"></i>
-                          <strong>{flavor.allergens.length}</strong>
-                          <small>allergeni indicati</small>
+                          <i class="fa-solid fa-list-check" aria-hidden="true"></i>
+                          <strong>{flavor.ingredients[locale].length}</strong>
+                          <small>ingredienti</small>
                         </span>
-                      ) : null
-                    }
-                  </div>
+                        {
+                          flavor.allergens.length > 0 ? (
+                            <span>
+                              <i class="fa-regular fa-file-lines" aria-hidden="true"></i>
+                              <strong>{flavor.allergens.length}</strong>
+                              <small>allergeni indicati</small>
+                            </span>
+                          ) : null
+                        }
+                      </div>
 
-                  <div class="dialog-detail-grid">
-                    <div class="detail-section">
-                      <h3>Ingredienti completi</h3>
-                      <ul class="ingredient-list">
-                        {flavor.ingredients[locale].map((ingredient) => <li>{ingredient}</li>)}
-                      </ul>
-                    </div>
-
-                    {
-                      flavor.allergens.length > 0 ? (
+                      <div class="dialog-detail-grid">
                         <div class="detail-section">
-                          <h3>Allergeni completi</h3>
-                          <ul class="detail-allergen-list">
-                            {flavor.allergens.map((allergen) => {
-                              const info = allergenInfo[allergen.key];
-                              return (
-                                <li class:list={["detail-allergen", allergen.presence]}>
-                                  <span class="allergen-icon" aria-hidden="true">
-                                    <i class={info.icon}></i>
-                                  </span>
-                                  <span>
-                                    <strong>{info.label[locale]}</strong>
-                                    <small>
-                                      {allergen.presence === "contains" ? "Contiene" : "Possibile presenza"}
-                                      {allergen.note ? ` · ${allergen.note[locale]}` : ""}
-                                    </small>
-                                  </span>
-                                </li>
-                              );
-                            })}
+                          <h3>Ingredienti completi</h3>
+                          <ul class="ingredient-list">
+                            {flavor.ingredients[locale].map((ingredient) => <li>{ingredient}</li>)}
                           </ul>
                         </div>
-                      ) : null
-                    }
+
+                        {
+                          flavor.allergens.length > 0 ? (
+                            <div class="detail-section">
+                              <h3>Allergeni completi</h3>
+                              <ul class="detail-allergen-list">
+                                {flavor.allergens.map((allergen) => {
+                                  const info = allergenInfo[allergen.key];
+                                  return (
+                                    <li class:list={["detail-allergen", allergen.presence]}>
+                                      <span class="allergen-icon" aria-hidden="true">
+                                        <i class={info.icon}></i>
+                                      </span>
+                                      <span>
+                                        <strong>{info.label[locale]}</strong>
+                                        <small>
+                                          {allergen.presence === "contains" ? "Contiene" : "Possibile presenza"}
+                                          {allergen.note ? ` · ${allergen.note[locale]}` : ""}
+                                        </small>
+                                      </span>
+                                    </li>
+                                  );
+                                })}
+                              </ul>
+                            </div>
+                          ) : null
+                        }
+                      </div>
+                    </div>
                   </div>
                 </div>
               </dialog>
