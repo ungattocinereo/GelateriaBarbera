@@ -464,7 +464,7 @@ export const flavors: FlavorItem[] = [
     category: "sorbetto",
     name: t("More di Gelso"),
     ingredients: t(["GELSI NERI SURG", "SCIROPPO DI ZUCCHERI", "ACQUA"]),
-    allergens: [],
+    allergens: [mayContain("latte", "Da Base Sorbetto 50")],
     iconSlug: "grapes",
     theme: "mulberry"
   },
@@ -473,7 +473,7 @@ export const flavors: FlavorItem[] = [
     category: "sorbetto",
     name: t("Fragola sorbetto"),
     ingredients: t(["SCIROPPO DI ZUCCHERI", "FRAGOLE SURG", "ACQUA"]),
-    allergens: [],
+    allergens: [mayContain("latte", "Da Base Sorbetto 50")],
     iconSlug: "strawberry",
     theme: "strawberry"
   },
@@ -482,7 +482,7 @@ export const flavors: FlavorItem[] = [
     category: "sorbetto",
     name: t("Lampone sorbetto"),
     ingredients: t(["SCIROPPO DI ZUCCHERI", "LAMPONI POLPA", "ACQUA"]),
-    allergens: [],
+    allergens: [mayContain("latte", "Da Base Sorbetto 50")],
     iconSlug: "raspberry",
     theme: "raspberry"
   },
@@ -500,7 +500,7 @@ export const flavors: FlavorItem[] = [
     category: "sorbetto",
     name: t("Limone sorbetto"),
     ingredients: t(["SCIROPPO DI ZUCCHERI", "SUCCO DI LIMONE SORRENTO", "ACQUA"]),
-    allergens: [],
+    allergens: [mayContain("latte", "Da Base Sorbetto 50")],
     iconSlug: "citrus",
     theme: "lemon"
   },
@@ -509,7 +509,7 @@ export const flavors: FlavorItem[] = [
     category: "sorbetto",
     name: t("Ananas"),
     ingredients: t(["SCIROPPO DI ZUCCHERI", "SUCCO DI ANANAS", "ACQUA"]),
-    allergens: [],
+    allergens: [mayContain("latte", "Da Base Sorbetto 50")],
     iconSlug: "pineapple",
     theme: "pineapple"
   },
@@ -518,7 +518,7 @@ export const flavors: FlavorItem[] = [
     category: "sorbetto",
     name: t("Mandarino"),
     ingredients: t(["SCIROPPO DI ZUCCHERI", "SUCCO DI MANDARINO", "ACQUA"]),
-    allergens: [],
+    allergens: [mayContain("latte", "Da Base Sorbetto 50")],
     iconSlug: "orange",
     theme: "mandarin"
   },
@@ -527,7 +527,7 @@ export const flavors: FlavorItem[] = [
     category: "sorbetto",
     name: t("Sciroppo di zucchero"),
     ingredients: t(["ACQUA", "SACCAROSIO", "BASE SORBETTO 50", "MALTODESTRINE", "DESTROSIO"]),
-    allergens: [],
+    allergens: [mayContain("latte", "Da Base Sorbetto 50")],
     iconSlug: "sugar",
     theme: "syrup"
   },
@@ -536,7 +536,7 @@ export const flavors: FlavorItem[] = [
     category: "sorbetto",
     name: t("Mango"),
     ingredients: t(["SCIROPPO DI ZUCCHERI", "SUCCO DI MANGO", "ACQUA"]),
-    allergens: [],
+    allergens: [mayContain("latte", "Da Base Sorbetto 50")],
     iconSlug: "natural-food",
     theme: "mango"
   },

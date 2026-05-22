@@ -200,8 +200,7 @@ main {
   padding: var(--spacing-56) var(--spacing-16) var(--spacing-40);
   overflow: hidden;
   background:
-    linear-gradient(90deg, rgba(15, 7, 51, 0.78), rgba(15, 7, 51, 0.4) 48%, rgba(15, 7, 51, 0.18)),
-    linear-gradient(0deg, rgba(15, 7, 51, 0.28), rgba(15, 7, 51, 0.28)),
+    linear-gradient(rgba(0, 0, 0, 0.34), rgba(0, 0, 0, 0.34)),
     url("/gelato-texture.png") center / cover no-repeat;
   color: var(--color-pure-white);
 }
@@ -423,6 +422,8 @@ main {
   border-radius: 16px;
   background: var(--color-pure-white);
   box-shadow: 0 8px 22px rgba(15, 7, 51, 0.05);
+  cursor: pointer;
+  overflow: hidden;
 }
 
 .flavor-card:nth-child(6n + 1),
@@ -434,27 +435,32 @@ main {
   display: none;
 }
 
-.favorite-button {
+.flavor-card > :not(.flavor-card-trigger):not(.flavor-dialog) {
+  position: relative;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.flavor-card-trigger {
   position: absolute;
-  top: var(--spacing-8);
-  right: var(--spacing-8);
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
+  inset: 0;
+  z-index: 3;
   padding: 0;
   border: 0;
+  border-radius: inherit;
   background: transparent;
-  color: var(--color-deep-violet);
   cursor: pointer;
-  font-size: 16px;
+}
+
+.flavor-card-trigger:focus-visible {
+  outline: 3px solid var(--color-electric-indigo);
+  outline-offset: -3px;
 }
 
 .flavor-topline {
   display: grid;
   justify-items: start;
   gap: var(--spacing-8);
-  padding-right: var(--spacing-24);
 }
 
 .flavor-icon {
@@ -529,16 +535,6 @@ main {
   background: var(--color-pure-white);
 }
 
-.allergen-more {
-  display: inline-grid;
-  grid-template-columns: 1fr;
-  place-items: center;
-  min-width: 32px;
-  color: var(--color-electric-indigo);
-  font-size: 11px;
-  font-weight: var(--font-weight-semibold);
-}
-
 .allergen-chip.contains {
   border-color: rgba(187, 197, 250, 0.9);
   background: var(--color-pure-white);
@@ -588,18 +584,6 @@ main {
   line-height: 1.2;
 }
 
-.no-allergens {
-  margin: 0;
-  padding: 6px 8px;
-  border: 1px dashed rgba(187, 197, 250, 0.9);
-  border-radius: 999px;
-  background: var(--color-pure-white);
-  color: var(--color-electric-indigo);
-  font-size: 11px;
-  font-weight: var(--font-weight-semibold);
-  line-height: 1.2;
-}
-
 .flavor-facts {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 14px;
@@ -609,6 +593,10 @@ main {
   padding-top: var(--spacing-10, 10px);
   border-top: 1px solid rgba(219, 211, 255, 0.9);
   color: var(--color-deep-violet);
+}
+
+.flavor-facts.single-fact {
+  grid-template-columns: minmax(0, 1fr) 14px;
 }
 
 .flavor-facts span {
@@ -645,6 +633,218 @@ main {
   justify-self: end;
   color: var(--color-electric-indigo);
   font-size: 14px;
+}
+
+.flavor-dialog {
+  width: min(760px, calc(100vw - 24px));
+  max-height: min(88vh, 900px);
+  margin: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-charcoal-black);
+  overflow: visible;
+}
+
+.flavor-dialog::backdrop {
+  background: rgba(15, 7, 51, 0.5);
+  backdrop-filter: blur(10px);
+}
+
+.flavor-dialog-card {
+  position: relative;
+  display: grid;
+  gap: var(--spacing-16);
+  max-height: min(88vh, 900px);
+  padding: var(--spacing-20);
+  border: 1px solid rgba(219, 211, 255, 0.92);
+  border-radius: var(--radius-cards);
+  background: var(--color-pure-white);
+  box-shadow: var(--shadow-xl);
+  overflow: auto;
+}
+
+.dialog-close {
+  position: absolute;
+  top: var(--spacing-12);
+  right: var(--spacing-12);
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid rgba(219, 211, 255, 0.92);
+  border-radius: 999px;
+  background: var(--color-pure-white);
+  color: var(--color-electric-indigo);
+  cursor: pointer;
+}
+
+.dialog-close:focus-visible {
+  outline: 3px solid var(--color-electric-indigo);
+  outline-offset: 2px;
+}
+
+.dialog-topline {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: var(--spacing-12);
+  align-items: center;
+  padding-right: 44px;
+}
+
+.dialog-icon {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  color: var(--card-accent);
+  filter: drop-shadow(0 12px 18px color-mix(in srgb, var(--card-accent) 16%, transparent));
+}
+
+.dialog-icon img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.dialog-topline h2 {
+  margin: 0;
+  color: var(--color-deep-violet);
+  font-size: var(--text-heading);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--leading-heading);
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+}
+
+.dialog-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--spacing-8);
+}
+
+.dialog-facts.single-fact {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.dialog-facts span {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  column-gap: var(--spacing-8);
+  align-items: center;
+  min-width: 0;
+  padding: var(--spacing-10, 10px) var(--spacing-12);
+  border: 1px solid rgba(219, 211, 255, 0.88);
+  border-radius: var(--radius-elements-sm);
+  background: var(--color-snow-drift);
+  color: var(--color-deep-violet);
+}
+
+.dialog-facts span > i {
+  grid-row: span 2;
+  color: var(--color-electric-indigo);
+  font-size: 18px;
+}
+
+.dialog-facts strong,
+.dialog-facts small {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.dialog-facts strong {
+  font-size: var(--text-body-lg);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.05;
+}
+
+.dialog-facts small {
+  color: var(--color-graphite);
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+}
+
+.dialog-detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+  gap: var(--spacing-16);
+  align-items: start;
+}
+
+.detail-section {
+  display: grid;
+  gap: var(--spacing-8);
+  min-width: 0;
+}
+
+.detail-section h3 {
+  margin: 0;
+  color: var(--color-electric-indigo);
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.2;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.ingredient-list,
+.detail-allergen-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ingredient-list li,
+.detail-allergen {
+  min-width: 0;
+  padding: 7px 8px;
+  border: 1px solid rgba(219, 211, 255, 0.7);
+  border-radius: var(--radius-elements-sm);
+  background: var(--color-snow-drift);
+  color: var(--color-deep-violet);
+}
+
+.ingredient-list li {
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.detail-allergen {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 7px;
+  align-items: start;
+}
+
+.detail-allergen.may-contain {
+  border-style: dashed;
+}
+
+.detail-allergen strong,
+.detail-allergen small {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.detail-allergen strong {
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.16;
+}
+
+.detail-allergen small {
+  margin-top: 2px;
+  color: var(--color-graphite);
+  font-size: var(--text-caption);
+  line-height: 1.25;
 }
 
 .site-footer {
@@ -837,7 +1037,6 @@ main {
 
   .flavor-topline {
     gap: var(--spacing-8);
-    padding-right: var(--spacing-24);
   }
 
   .flavor-icon {
@@ -847,6 +1046,10 @@ main {
 
   .allergen-icon {
     display: none;
+  }
+
+  .detail-allergen .allergen-icon {
+    display: grid;
   }
 
   .allergen-chip {
@@ -874,5 +1077,35 @@ main {
 
   .flavor-facts small {
     font-size: var(--text-caption);
+  }
+
+  .flavor-dialog {
+    width: min(100vw - 16px, 560px);
+    max-height: calc(100vh - 24px);
+  }
+
+  .flavor-dialog-card {
+    max-height: calc(100vh - 24px);
+    padding: var(--spacing-16);
+  }
+
+  .dialog-topline {
+    grid-template-columns: 58px minmax(0, 1fr);
+    padding-right: 38px;
+  }
+
+  .dialog-icon {
+    width: 58px;
+    height: 58px;
+  }
+
+  .dialog-topline h2 {
+    font-size: var(--text-subheading);
+    line-height: var(--leading-subheading);
+  }
+
+  .dialog-facts,
+  .dialog-detail-grid {
+    grid-template-columns: 1fr;
   }
 }

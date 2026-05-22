@@ -145,13 +145,19 @@ const icons8FoodIconUrl = (slug: string, theme: string) =>
             <article
               class={`flavor-card theme-${flavor.theme}`}
               data-category={flavor.category}
+              data-card
               data-search={`${flavor.name[locale]} ${flavor.ingredients[locale].join(" ")} ${flavor.allergens
                 .map((allergen) => allergenInfo[allergen.key].label[locale])
                 .join(" ")}`.toLocaleLowerCase("it")}
             >
-              <button class="favorite-button" type="button" aria-label={`Salva ${flavor.name[locale]}`}>
-                <i class="fa-regular fa-heart" aria-hidden="true"></i>
-              </button>
+              <button
+                class="flavor-card-trigger"
+                type="button"
+                data-dialog-trigger
+                aria-label={`Apri scheda dettagliata di ${flavor.name[locale]}`}
+                aria-haspopup="dialog"
+                aria-controls={`dialog-${flavor.id}`}
+              ></button>
 
               <div class="flavor-topline">
                 <div class="flavor-icon" aria-hidden="true">
@@ -170,12 +176,12 @@ const icons8FoodIconUrl = (slug: string, theme: string) =>
                 </div>
               </div>
 
-              <div class="allergens" aria-label={`Allergeni per ${flavor.name[locale]}`}>
-                <h3>Allergeni</h3>
-                {
-                  flavor.allergens.length > 0 ? (
+              {
+                flavor.allergens.length > 0 ? (
+                  <div class="allergens" aria-label={`Allergeni per ${flavor.name[locale]}`}>
+                    <h3>Allergeni</h3>
                     <div class="allergen-list">
-                      {flavor.allergens.slice(0, 2).map((allergen) => {
+                      {flavor.allergens.map((allergen) => {
                         const info = allergenInfo[allergen.key];
                         return (
                           <span class:list={["allergen-chip", allergen.presence]} title={info.description[locale]}>
@@ -190,29 +196,115 @@ const icons8FoodIconUrl = (slug: string, theme: string) =>
                           </span>
                         );
                       })}
-                      {flavor.allergens.length > 2 ? (
-                        <span class="allergen-chip allergen-more">+{flavor.allergens.length - 2}</span>
-                      ) : null}
                     </div>
-                  ) : (
-                    <p class="no-allergens">Nessun allergene indicato nel documento.</p>
-                  )
-                }
-              </div>
+                  </div>
+                ) : null
+              }
 
-              <div class="flavor-facts" aria-label={`Dettagli per ${flavor.name[locale]}`}>
+              <div class:list={["flavor-facts", { "single-fact": flavor.allergens.length === 0 }]} aria-label={`Dettagli per ${flavor.name[locale]}`}>
                 <span>
                   <i class="fa-solid fa-list-check" aria-hidden="true"></i>
                   <strong>{flavor.ingredients[locale].length}</strong>
                   <small>ingredienti</small>
                 </span>
-                <span>
-                  <i class="fa-regular fa-file-lines" aria-hidden="true"></i>
-                  <strong>{flavor.allergens.length === 0 ? "0" : flavor.allergens.length}</strong>
-                  <small>allergeni indicati</small>
-                </span>
+                {
+                  flavor.allergens.length > 0 ? (
+                    <span>
+                      <i class="fa-regular fa-file-lines" aria-hidden="true"></i>
+                      <strong>{flavor.allergens.length}</strong>
+                      <small>allergeni indicati</small>
+                    </span>
+                  ) : null
+                }
                 <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
               </div>
+
+              <dialog
+                class:list={["flavor-dialog", `theme-${flavor.theme}`]}
+                id={`dialog-${flavor.id}`}
+                aria-labelledby={`dialog-title-${flavor.id}`}
+              >
+                <div class="flavor-dialog-card">
+                  <button
+                    class="dialog-close"
+                    type="button"
+                    data-dialog-close
+                    aria-label={`Chiudi scheda dettagliata di ${flavor.name[locale]}`}
+                  >
+                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                  </button>
+
+                  <div class="dialog-topline">
+                    <div class="dialog-icon" aria-hidden="true">
+                      <img
+                        src={icons8FoodIconUrl(flavor.iconSlug, flavor.theme)}
+                        alt=""
+                        loading="lazy"
+                        width="160"
+                        height="160"
+                        decoding="async"
+                      />
+                    </div>
+                    <div>
+                      <p class="category-label">{categoryLabels[flavor.category][locale]}</p>
+                      <h2 id={`dialog-title-${flavor.id}`}>{flavor.name[locale]}</h2>
+                    </div>
+                  </div>
+
+                  <div class:list={["dialog-facts", { "single-fact": flavor.allergens.length === 0 }]}>
+                    <span>
+                      <i class="fa-solid fa-list-check" aria-hidden="true"></i>
+                      <strong>{flavor.ingredients[locale].length}</strong>
+                      <small>ingredienti</small>
+                    </span>
+                    {
+                      flavor.allergens.length > 0 ? (
+                        <span>
+                          <i class="fa-regular fa-file-lines" aria-hidden="true"></i>
+                          <strong>{flavor.allergens.length}</strong>
+                          <small>allergeni indicati</small>
+                        </span>
+                      ) : null
+                    }
+                  </div>
+
+                  <div class="dialog-detail-grid">
+                    <div class="detail-section">
+                      <h3>Ingredienti completi</h3>
+                      <ul class="ingredient-list">
+                        {flavor.ingredients[locale].map((ingredient) => <li>{ingredient}</li>)}
+                      </ul>
+                    </div>
+
+                    {
+                      flavor.allergens.length > 0 ? (
+                        <div class="detail-section">
+                          <h3>Allergeni completi</h3>
+                          <ul class="detail-allergen-list">
+                            {flavor.allergens.map((allergen) => {
+                              const info = allergenInfo[allergen.key];
+                              return (
+                                <li class:list={["detail-allergen", allergen.presence]}>
+                                  <span class="allergen-icon" aria-hidden="true">
+                                    <i class={info.icon}></i>
+                                  </span>
+                                  <span>
+                                    <strong>{info.label[locale]}</strong>
+                                    <small>
+                                      {allergen.presence === "contains" ? "Contiene" : "Possibile presenza"}
+                                      {allergen.note ? ` · ${allergen.note[locale]}` : ""}
+                                    </small>
+                                  </span>
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        </div>
+                      ) : null
+                    }
+                  </div>
+                </div>
+              </dialog>
             </article>
           ))
         }
@@ -230,13 +322,30 @@ const icons8FoodIconUrl = (slug: string, theme: string) =>
       const search = document.querySelector<HTMLInputElement>(".search-field input");
       let activeFilter = "all";
 
+      const closeDialog = (dialog: HTMLDialogElement | null) => {
+        if (!dialog?.open) {
+          return;
+        }
+
+        if (typeof dialog.close === "function") {
+          dialog.close();
+        } else {
+          dialog.removeAttribute("open");
+        }
+      };
+
       const updateCards = () => {
         const query = search?.value.trim().toLocaleLowerCase("it") ?? "";
 
         cards.forEach((card) => {
           const matchesCategory = activeFilter === "all" || card.getAttribute("data-category") === activeFilter;
           const matchesSearch = !query || card.getAttribute("data-search")?.includes(query);
-          card.classList.toggle("is-hidden", !(matchesCategory && matchesSearch));
+          const isVisible = Boolean(matchesCategory && matchesSearch);
+
+          card.classList.toggle("is-hidden", !isVisible);
+          if (!isVisible) {
+            closeDialog(card.querySelector<HTMLDialogElement>(".flavor-dialog"));
+          }
         });
       };
 
@@ -255,6 +364,33 @@ const icons8FoodIconUrl = (slug: string, theme: string) =>
       });
 
       search?.addEventListener("input", updateCards);
+
+      cards.forEach((card) => {
+        const trigger = card.querySelector<HTMLButtonElement>("[data-dialog-trigger]");
+        const dialogId = trigger?.getAttribute("aria-controls");
+        const dialog = dialogId ? (document.getElementById(dialogId) as HTMLDialogElement | null) : null;
+        const closeButton = dialog?.querySelector<HTMLButtonElement>("[data-dialog-close]");
+
+        trigger?.addEventListener("click", () => {
+          if (!dialog) {
+            return;
+          }
+
+          if (typeof dialog.showModal === "function") {
+            dialog.showModal();
+          } else {
+            dialog.setAttribute("open", "");
+          }
+        });
+
+        closeButton?.addEventListener("click", () => closeDialog(dialog));
+
+        dialog?.addEventListener("click", (event) => {
+          if (event.target === dialog) {
+            closeDialog(dialog);
+          }
+        });
+      });
     </script>
   </body>
 </html>
