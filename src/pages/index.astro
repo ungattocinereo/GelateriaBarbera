@@ -140,6 +140,10 @@ const flavorsWithImages = flavors.map((flavor) => ({
                 aria-controls={`dialog-${flavor.id}`}
               ></button>
 
+              <span class="ingredient-count-badge" aria-label={`${flavor.ingredients[locale].length} ingredienti`}>
+                <strong>{flavor.ingredients[locale].length}</strong>
+              </span>
+
               <div class="flavor-topline">
                 <div class="flavor-photo">
                   <img
@@ -181,24 +185,6 @@ const flavorsWithImages = flavors.map((flavor) => ({
                   </div>
                 ) : null
               }
-
-              <div class:list={["flavor-facts", { "single-fact": flavor.allergens.length === 0 }]} aria-label={`Dettagli per ${flavor.name[locale]}`}>
-                <span>
-                  <i class="fa-solid fa-list-check" aria-hidden="true"></i>
-                  <strong>{flavor.ingredients[locale].length}</strong>
-                  <small>ingredienti</small>
-                </span>
-                {
-                  flavor.allergens.length > 0 ? (
-                    <span>
-                      <i class="fa-regular fa-file-lines" aria-hidden="true"></i>
-                      <strong>{flavor.allergens.length}</strong>
-                      <small>allergeni indicati</small>
-                    </span>
-                  ) : null
-                }
-                <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
-              </div>
 
               <dialog
                 class:list={["flavor-dialog", `theme-${flavor.theme}`]}

@@ -119,6 +119,19 @@ test("cards do not render an empty-allergen placeholder", () => {
   assert.match(pageSource, /flavor\.allergens\.length > 0/, "Allergen sections should be conditional");
 });
 
+test("compact cards use only a corner ingredient count badge", () => {
+  assert.match(pageSource, /class="ingredient-count-badge"/, "Compact cards should render the ingredient count as a corner badge");
+  assert.match(styleSource, /\.flavor-card > \.ingredient-count-badge[\s\S]*?right:\s*0;/, "Ingredient count badge should sit in the top-right corner");
+  assert.match(styleSource, /\.ingredient-count-badge[\s\S]*?border-bottom-left-radius:\s*46px;/, "Ingredient count badge should read as a quarter-circle tag");
+  assert.match(
+    styleSource,
+    /\.flavor-card > :not\(\.flavor-card-trigger\):not\(\.flavor-dialog\):not\(\.ingredient-count-badge\)/,
+    "General compact card child positioning should not override the absolute corner badge"
+  );
+  assert.doesNotMatch(pageSource, /class:list=\{\["flavor-facts"/, "Compact cards should not render bottom fact indicators");
+  assert.doesNotMatch(styleSource, /\.flavor-facts\s*\{/, "Removed bottom fact indicators should not keep stale compact CSS");
+});
+
 test("mobile hero proof stays in one white row", () => {
   assert.match(
     styleSource,

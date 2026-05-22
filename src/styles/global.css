@@ -435,10 +435,34 @@ main {
   display: none;
 }
 
-.flavor-card > :not(.flavor-card-trigger):not(.flavor-dialog) {
+.flavor-card > :not(.flavor-card-trigger):not(.flavor-dialog):not(.ingredient-count-badge) {
   position: relative;
   z-index: 1;
   pointer-events: none;
+}
+
+.flavor-card > .ingredient-count-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 2;
+  display: grid;
+  place-items: start end;
+  width: 46px;
+  height: 46px;
+  padding: 8px 10px 0 0;
+  border: 0;
+  border-bottom-left-radius: 46px;
+  background: var(--color-electric-indigo);
+  color: var(--color-pure-white);
+  box-shadow: -6px 8px 18px rgba(71, 28, 255, 0.18);
+}
+
+.ingredient-count-badge strong {
+  color: inherit;
+  font-size: 15px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 1;
 }
 
 .flavor-card-trigger {
@@ -579,57 +603,6 @@ main {
   font-size: var(--text-caption);
   font-style: normal;
   line-height: 1.2;
-}
-
-.flavor-facts {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 14px;
-  gap: 6px;
-  align-items: center;
-  margin-top: auto;
-  padding-top: var(--spacing-10, 10px);
-  border-top: 1px solid rgba(219, 211, 255, 0.9);
-  color: var(--color-deep-violet);
-}
-
-.flavor-facts.single-fact {
-  grid-template-columns: minmax(0, 1fr) 14px;
-}
-
-.flavor-facts span {
-  display: grid;
-  grid-template-columns: 18px minmax(0, 1fr);
-  column-gap: 5px;
-  align-items: center;
-  min-width: 0;
-}
-
-.flavor-facts span > i {
-  grid-row: span 2;
-  color: var(--color-electric-indigo);
-  font-size: 15px;
-}
-
-.flavor-facts strong,
-.flavor-facts small {
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-
-.flavor-facts strong {
-  font-size: 13px;
-  font-weight: var(--font-weight-semibold);
-  line-height: 1.05;
-}
-
-.flavor-facts small {
-  display: none;
-}
-
-.flavor-facts > i {
-  justify-self: end;
-  color: var(--color-electric-indigo);
-  font-size: 14px;
 }
 
 .flavor-dialog {
@@ -1076,31 +1049,20 @@ main {
     border-radius: 10px;
   }
 
+  .flavor-card > .ingredient-count-badge {
+    width: 42px;
+    height: 42px;
+    padding: 7px 9px 0 0;
+    border-bottom-left-radius: 42px;
+  }
+
+  .ingredient-count-badge strong {
+    font-size: 14px;
+  }
+
   .allergen-chip {
     grid-template-columns: 18px minmax(0, 1fr);
     padding-inline: 7px;
-  }
-
-  .flavor-facts {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 14px;
-    gap: 6px;
-  }
-
-  .flavor-facts span {
-    grid-template-columns: 18px minmax(0, 1fr);
-    column-gap: 5px;
-  }
-
-  .flavor-facts span > i {
-    font-size: 15px;
-  }
-
-  .flavor-facts strong {
-    font-size: 13px;
-  }
-
-  .flavor-facts small {
-    font-size: var(--text-caption);
   }
 
   .flavor-dialog {
