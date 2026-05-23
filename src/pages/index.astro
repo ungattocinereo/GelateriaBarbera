@@ -1,15 +1,28 @@
 ---
-import { allergenInfo, categoryLabels, defaultLocale, flavors, locales, type Category } from "@data/flavors";
+import {
+  allergenInfo,
+  allergenPresenceLabels,
+  categoryLabels,
+  defaultLocale,
+  flavors,
+  locales,
+  uiCopy,
+  type Category,
+  type Locale
+} from "@data/flavors";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import socialPreviewImage from "../../images/stracciatella.png";
 import "../styles/global.css";
 
-const locale = defaultLocale;
-const siteTitle = "LaB Ingredienti e Allergeni | Laboratorio del Gelato Praiano";
-const siteDescription = "Consulta ingredienti e allergeni dei gelati artigianali, sorbetti, coni ed extra di LaB Laboratorio del Gelato a Praiano.";
-const socialDescription = "Scegli il tuo gelato LaB a Praiano con schede chiare su ingredienti, allergeni e possibili tracce.";
-const socialImageAlt = "Gelato stracciatella di LaB Laboratorio del Gelato a Praiano";
-const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url).toString();
+const locale = (Astro.props.locale ?? defaultLocale) as Locale;
+const copy = uiCopy[locale];
+const currentLocale = locales.find((item) => item.code === locale) ?? locales[0];
+const searchLocale = locale === "zh" ? "zh-Hans-CN" : locale;
+const siteTitle = copy.siteTitle;
+const siteDescription = copy.siteDescription;
+const socialDescription = copy.socialDescription;
+const socialImageAlt = copy.socialImageAlt;
+const canonicalUrl = new URL(currentLocale.path, Astro.site ?? Astro.url).toString();
 const socialImageUrl = new URL(socialPreviewImage.src, Astro.site ?? Astro.url).toString();
 const socialImageType = socialPreviewImage.format === "jpg" ? "image/jpeg" : `image/${socialPreviewImage.format}`;
 const socialImageWidth = socialPreviewImage.width.toString();
@@ -43,7 +56,7 @@ const flavorsWithImages = flavors.map((flavor) => ({
 ---
 
 <!doctype html>
-<html lang="it">
+<html lang={locale}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -52,10 +65,12 @@ const flavorsWithImages = flavors.map((flavor) => ({
     <meta name="robots" content="index, follow" />
     <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <link rel="canonical" href={canonicalUrl} />
+    {locales.map((item) => <link rel="alternate" hreflang={item.code} href={new URL(item.path, Astro.site ?? Astro.url).toString()} />)}
+    <link rel="alternate" hreflang="x-default" href={new URL("/", Astro.site ?? Astro.url).toString()} />
     <meta name="theme-color" content="#0f0733" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="LaB Laboratorio del Gelato" />
-    <meta property="og:locale" content="it_IT" />
+    <meta property="og:locale" content={currentLocale.ogLocale} />
     <meta property="og:title" content={siteTitle} />
     <meta property="og:description" content={socialDescription} />
     <meta property="og:url" content={canonicalUrl} />
@@ -73,20 +88,27 @@ const flavorsWithImages = flavors.map((flavor) => ({
   </head>
   <body>
     <header class="site-header">
-      <a class="brand" href="/" aria-label="LaB Laboratorio del Gelato">
+      <a class="brand" href={currentLocale.path} aria-label="LaB Laboratorio del Gelato">
         <img src="/logo-new.png" alt="LaB Laboratorio del Gelato" />
         <span>
-          <strong>Ingredienti e allergeni</strong>
-          <small>Praiano, Amalfi Coast</small>
+          <strong>{copy.brandTitle}</strong>
+          <small>{copy.brandSubtitle}</small>
         </span>
       </a>
 
-      <nav class="language-switcher" aria-label="Lingue disponibili">
+      <nav class="language-switcher" aria-label={copy.languageNavLabel}>
         {
           locales.map((item) => (
-            <button class:list={["language-button", { active: item.active }]} disabled={!item.active} title={item.label}>
-              <span>{item.short}</span>
-            </button>
+            <a
+              class:list={["language-button", { active: item.code === locale }]}
+              href={item.path}
+              title={item.label}
+              lang={item.code}
+              aria-current={item.code === locale ? "page" : undefined}
+            >
+              <span class:list={["language-flag", item.flagClass]} aria-hidden="true"></span>
+              <span class="language-code">{item.short}</span>
+            </a>
           ))
         }
       </nav>
@@ -95,27 +117,24 @@ const flavorsWithImages = flavors.map((flavor) => ({
     <main>
       <section class="hero" aria-labelledby="page-title">
         <div class="hero-copy">
-          <h1 id="page-title">Ingredienti chiari per scegliere il tuo gelato.</h1>
-          <p>
-            Consulta ingredienti e allergeni di gelati, sorbetti, coni e extra. Le indicazioni
-            seguono il documento ingredienti per il pubblico.
-          </p>
-          <div class="hero-actions" aria-label="Azioni principali">
-            <a class="primary-action" href="#flavors">Consulta gusti</a>
-            <a class="ghost-action" href="#filters">Filtra categorie</a>
+          <h1 id="page-title">{copy.heroTitle}</h1>
+          <p>{copy.heroIntro}</p>
+          <div class="hero-actions" aria-label={copy.mainActionsLabel}>
+            <a class="primary-action" href="#flavors">{copy.primaryAction}</a>
+            <a class="ghost-action" href="#filters">{copy.ghostAction}</a>
           </div>
-          <div class="hero-proof" aria-label="Sintesi catalogo">
+          <div class="hero-proof" aria-label={copy.heroProofLabel}>
             <span>
               <strong>{counts.all}</strong>
-              gusti e extra
+              {copy.allCountLabel}
             </span>
             <span>
               <strong>{counts.gelato}</strong>
-              gelati
+              {copy.gelatoCountLabel}
             </span>
             <span>
               <strong>{counts.sorbetto}</strong>
-              sorbetti
+              {copy.sorbettoCountLabel}
             </span>
           </div>
         </div>
@@ -124,8 +143,8 @@ const flavorsWithImages = flavors.map((flavor) => ({
         </div>
       </section>
 
-      <section class="toolbar" id="filters" aria-label="Filtro categorie">
-        <div class="category-tabs" role="tablist" aria-label="Categorie">
+      <section class="toolbar" id="filters" aria-label={copy.filterSectionLabel}>
+        <div class="category-tabs" role="tablist" aria-label={copy.categoryTabsLabel}>
           {
             categories.map((category) => (
               <button
@@ -141,13 +160,13 @@ const flavorsWithImages = flavors.map((flavor) => ({
           }
         </div>
         <label class="search-field">
-          <span class="sr-only">Cerca gusto o ingrediente</span>
+          <span class="sr-only">{copy.searchLabel}</span>
           <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-          <input type="search" placeholder="Cerca gusto o ingrediente..." autocomplete="off" />
+          <input type="search" placeholder={copy.searchPlaceholder} autocomplete="off" />
         </label>
       </section>
 
-      <section class="flavor-grid" id="flavors" aria-label="Lista ingredienti e allergeni">
+      <section class="flavor-grid" id="flavors" aria-label={copy.flavorGridLabel}>
         {
           flavorsWithImages.map((flavor) => (
             <article
@@ -156,18 +175,18 @@ const flavorsWithImages = flavors.map((flavor) => ({
               data-card
               data-search={`${flavor.name[locale]} ${flavor.ingredients[locale].join(" ")} ${flavor.allergens
                 .map((allergen) => allergenInfo[allergen.key].label[locale])
-                .join(" ")}`.toLocaleLowerCase("it")}
+                .join(" ")}`.toLocaleLowerCase(searchLocale)}
             >
               <button
                 class="flavor-card-trigger"
                 type="button"
                 data-dialog-trigger
-                aria-label={`Apri scheda dettagliata di ${flavor.name[locale]}`}
+                aria-label={copy.openFlavor(flavor.name[locale])}
                 aria-haspopup="dialog"
                 aria-controls={`dialog-${flavor.id}`}
               ></button>
 
-              <span class="ingredient-count-badge" aria-label={`${flavor.ingredients[locale].length} ingredienti`}>
+              <span class="ingredient-count-badge" aria-label={copy.ingredientCountLabel(flavor.ingredients[locale].length)}>
                 <strong>{flavor.ingredients[locale].length}</strong>
               </span>
 
@@ -175,7 +194,7 @@ const flavorsWithImages = flavors.map((flavor) => ({
                 <div class="flavor-photo">
                   <img
                     src={flavor.imageSrc}
-                    alt={`Foto di ${flavor.name[locale]}`}
+                    alt={copy.photoAlt(flavor.name[locale])}
                     loading="lazy"
                     width="420"
                     height="320"
@@ -190,8 +209,8 @@ const flavorsWithImages = flavors.map((flavor) => ({
 
               {
                 flavor.allergens.length > 0 ? (
-                  <div class="allergens" aria-label={`Allergeni per ${flavor.name[locale]}`}>
-                    <h3>Allergeni</h3>
+                  <div class="allergens" aria-label={copy.allergensFor(flavor.name[locale])}>
+                    <h3>{copy.allergensHeading}</h3>
                     <div class="allergen-list">
                       {flavor.allergens.map((allergen) => {
                         const info = allergenInfo[allergen.key];
@@ -202,7 +221,7 @@ const flavorsWithImages = flavors.map((flavor) => ({
                             </span>
                             <span>
                               <strong>{info.label[locale]}</strong>
-                              <small>{allergen.presence === "contains" ? "Contiene" : "Possibile presenza"}</small>
+                              <small>{allergenPresenceLabels[allergen.presence][locale]}</small>
                               {allergen.note ? <em>{allergen.note[locale]}</em> : null}
                             </span>
                           </span>
@@ -223,7 +242,7 @@ const flavorsWithImages = flavors.map((flavor) => ({
                     class="dialog-close"
                     type="button"
                     data-dialog-close
-                    aria-label={`Chiudi scheda dettagliata di ${flavor.name[locale]}`}
+                    aria-label={copy.closeFlavor(flavor.name[locale])}
                   >
                     <i class="fa-solid fa-xmark" aria-hidden="true"></i>
                   </button>
@@ -232,7 +251,7 @@ const flavorsWithImages = flavors.map((flavor) => ({
                     <div class="dialog-photo">
                       <img
                         src={flavor.imageSrc}
-                        alt={`Foto di ${flavor.name[locale]}`}
+                        alt={copy.photoAlt(flavor.name[locale])}
                         loading="lazy"
                         width="640"
                         height="760"
@@ -252,14 +271,14 @@ const flavorsWithImages = flavors.map((flavor) => ({
                         <span>
                           <i class="fa-solid fa-list-check" aria-hidden="true"></i>
                           <strong>{flavor.ingredients[locale].length}</strong>
-                          <small>ingredienti</small>
+                          <small>{copy.ingredientFactLabel}</small>
                         </span>
                         {
                           flavor.allergens.length > 0 ? (
                             <span>
                               <i class="fa-regular fa-file-lines" aria-hidden="true"></i>
                               <strong>{flavor.allergens.length}</strong>
-                              <small>allergeni indicati</small>
+                              <small>{copy.allergenFactLabel}</small>
                             </span>
                           ) : null
                         }
@@ -267,7 +286,7 @@ const flavorsWithImages = flavors.map((flavor) => ({
 
                       <div class="dialog-detail-grid">
                         <div class="detail-section">
-                          <h3>Ingredienti completi</h3>
+                          <h3>{copy.fullIngredientsHeading}</h3>
                           <ul class="ingredient-list">
                             {flavor.ingredients[locale].map((ingredient) => <li>{ingredient}</li>)}
                           </ul>
@@ -276,7 +295,7 @@ const flavorsWithImages = flavors.map((flavor) => ({
                         {
                           flavor.allergens.length > 0 ? (
                             <div class="detail-section">
-                              <h3>Allergeni completi</h3>
+                              <h3>{copy.fullAllergensHeading}</h3>
                               <ul class="detail-allergen-list">
                                 {flavor.allergens.map((allergen) => {
                                   const info = allergenInfo[allergen.key];
@@ -288,7 +307,7 @@ const flavorsWithImages = flavors.map((flavor) => ({
                                       <span>
                                         <strong>{info.label[locale]}</strong>
                                         <small>
-                                          {allergen.presence === "contains" ? "Contiene" : "Possibile presenza"}
+                                          {allergenPresenceLabels[allergen.presence][locale]}
                                           {allergen.note ? ` · ${allergen.note[locale]}` : ""}
                                         </small>
                                       </span>
@@ -312,7 +331,7 @@ const flavorsWithImages = flavors.map((flavor) => ({
 
     <footer class="site-footer">
       <p>LaB Laboratorio del Gelato · Praiano</p>
-      <p>Versione italiana. Traduzioni in preparazione: English, 中文, Français.</p>
+      <p>{copy.footerStatus}</p>
     </footer>
 
     <script>
@@ -334,7 +353,7 @@ const flavorsWithImages = flavors.map((flavor) => ({
       };
 
       const updateCards = () => {
-        const query = search?.value.trim().toLocaleLowerCase("it") ?? "";
+        const query = search?.value.trim().toLocaleLowerCase(document.documentElement.lang || "it") ?? "";
 
         cards.forEach((card) => {
           const matchesCategory = activeFilter === "all" || card.getAttribute("data-category") === activeFilter;

@@ -1,0 +1,15 @@
+---
+import type { Locale } from "@data/flavors";
+import IngredientPage from "../index.astro";
+
+export function getStaticPaths() {
+  return (["en", "zh", "fr"] satisfies Locale[]).map((locale) => ({
+    params: { locale },
+    props: { locale }
+  }));
+}
+
+const { locale } = Astro.props as { locale: Locale };
+---
+
+<IngredientPage locale={locale} />

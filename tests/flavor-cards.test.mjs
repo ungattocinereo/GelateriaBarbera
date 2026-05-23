@@ -1,9 +1,14 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import test from "node:test";
 
+const readOptional = (url) => (existsSync(url) ? readFileSync(url, "utf8") : "");
+
 const dataSource = readFileSync(new URL("../src/data/flavors.ts", import.meta.url), "utf8");
-const pageSource = readFileSync(new URL("../src/pages/index.astro", import.meta.url), "utf8");
+const indexPageSource = readFileSync(new URL("../src/pages/index.astro", import.meta.url), "utf8");
+const localizedPageSource = readOptional(new URL("../src/pages/[locale]/index.astro", import.meta.url));
+const componentSource = readOptional(new URL("../src/components/IngredientPage.astro", import.meta.url));
+const pageSource = [indexPageSource, localizedPageSource, componentSource].join("\n");
 const styleSource = readFileSync(new URL("../src/styles/global.css", import.meta.url), "utf8");
 const astroConfigSource = readFileSync(new URL("../astro.config.mjs", import.meta.url), "utf8");
 
@@ -36,12 +41,65 @@ test("fruit sorbetti made with sugar syrup carry the researched base-sorbetto tr
   }
 });
 
+test("strawberry and mulberry sorbetti do not mention frozen fruit in public ingredients", () => {
+  const mulberry = flavorBlock("more-gelso");
+  const strawberry = flavorBlock("fragola-sorbetto");
+
+  assert.doesNotMatch(mulberry, /GELSI NERI SURG/, "More di Gelso should not mention frozen mulberries");
+  assert.match(mulberry, /"GELSI NERI"/, "More di Gelso should keep the mulberry ingredient");
+  assert.doesNotMatch(strawberry, /FRAGOLE SURG/, "Fragola sorbetto should not mention frozen strawberries");
+  assert.match(strawberry, /"FRAGOLE"/, "Fragola sorbetto should keep the strawberry ingredient");
+});
+
+test("language routes render Italian at root and translated locales under prefixes", () => {
+  assert.match(indexPageSource, /Astro\.props\.locale \?\? defaultLocale/, "Root page should fall back to Italian when no locale prop is passed");
+  assert.match(localizedPageSource, /getStaticPaths/, "Translated locales should be generated from a dynamic route");
+  assert.match(localizedPageSource, /"en"/, "English should be generated at /en/");
+  assert.match(localizedPageSource, /"zh"/, "Chinese should be generated at /zh/");
+  assert.match(localizedPageSource, /"fr"/, "French should be generated at /fr/");
+  assert.doesNotMatch(localizedPageSource, /"it"/, "Italian should remain the unprefixed default route only");
+});
+
+test("language switcher uses working links instead of disabled placeholders", () => {
+  assert.match(pageSource, /<a\s+[\s\S]*?class:list=\{\["language-button"/, "Language choices should render as links");
+  assert.match(pageSource, /href=\{item\.path\}/, "Language links should point to locale routes");
+  assert.doesNotMatch(pageSource, /disabled=\{!item\.active\}/, "Translated languages should not be disabled");
+  assert.doesNotMatch(pageSource, /Traduzioni in preparazione/, "Footer should not claim translations are still pending");
+});
+
+test("language links show flags without browser link underlines", () => {
+  assert.match(dataSource, /flagClass:\s*"flag-it"/, "Italian language link should expose an Italian flag class");
+  assert.match(dataSource, /flagClass:\s*"flag-en"/, "English language link should expose an English flag class");
+  assert.match(dataSource, /flagClass:\s*"flag-zh"/, "Chinese language link should expose a Chinese flag class");
+  assert.match(dataSource, /flagClass:\s*"flag-fr"/, "French language link should expose a French flag class");
+  assert.match(pageSource, /class:list=\{\["language-flag", item\.flagClass\]\}/, "Language links should render a dedicated CSS flag element");
+  assert.match(styleSource, /\.language-button\s*\{[\s\S]*?text-decoration:\s*none;/, "Language links should remove default underlines");
+  assert.match(styleSource, /\.flag-en\s*\{[\s\S]*?url\("data:image\/svg\+xml/, "English flag should use stable CSS artwork instead of emoji rendering");
+});
+
+test("catalog and UI have real English Chinese and French translations", () => {
+  assert.match(pageSource, /const locale = \(Astro\.props\.locale \?\? defaultLocale\) as Locale/, "Rendered page should receive its locale from props");
+  assert.doesNotMatch(pageSource, /const locale = defaultLocale;/, "Rendered page should not force every route to Italian");
+  assert.match(dataSource, /Water-based chocolate/, "English flavor names should be translated");
+  assert.match(dataSource, /水巧克力/, "Simplified Chinese flavor names should be translated");
+  assert.match(dataSource, /Chocolat à l'eau/, "French flavor names should be translated");
+  assert.match(dataSource, /Black mulberries/, "English ingredients should use the public non-frozen mulberry wording");
+  assert.match(dataSource, /黑桑葚/, "Chinese ingredients should use the public non-frozen mulberry wording");
+  assert.match(dataSource, /Mures noires/, "French ingredients should use the public non-frozen mulberry wording");
+  assert.match(dataSource, /Fresh strawberries/, "English ingredients should use the public non-frozen strawberry wording");
+  assert.match(dataSource, /新鲜草莓/, "Chinese ingredients should use the public non-frozen strawberry wording");
+  assert.match(dataSource, /Fraises/, "French ingredients should use the public non-frozen strawberry wording");
+  assert.match(dataSource, /Contains/, "Allergen presence labels should be available in English");
+  assert.match(dataSource, /含有/, "Allergen presence labels should be available in Chinese");
+  assert.match(dataSource, /Contient/, "Allergen presence labels should be available in French");
+});
+
 test("flavor cards expose full details through a tap disclosure", () => {
   assert.match(pageSource, /class="flavor-card-trigger"/, "Cards need a full-card trigger");
   assert.match(pageSource, /aria-haspopup="dialog"/, "Cards should open a large detail card");
   assert.match(pageSource, /<dialog/, "Cards should render large detail dialogs");
-  assert.match(pageSource, /Ingredienti completi/, "Expanded cards should label full ingredients");
-  assert.match(pageSource, /Allergeni completi/, "Expanded cards should label full allergens");
+  assert.match(pageSource, /copy\.fullIngredientsHeading/, "Expanded cards should label full ingredients");
+  assert.match(pageSource, /copy\.fullAllergensHeading/, "Expanded cards should label full allergens");
   assert.match(pageSource, /showModal\(\)/, "Tap should open the dialog detail card");
   assert.doesNotMatch(pageSource, /flavor\.allergens\.slice\(0,\s*2\)/, "The rendered allergen list should not be capped at two");
 });
@@ -56,8 +114,8 @@ test("cards use real flavor photos instead of external food icons", () => {
 
 test("page exposes Google and social sharing metadata with stracciatella preview", () => {
   assert.match(pageSource, /import socialPreviewImage from "\.\.\/\.\.\/images\/stracciatella\.png";/, "Social preview should use the stracciatella image asset");
-  assert.match(pageSource, /const siteDescription = "Consulta ingredienti e allergeni/, "Google description should be defined as concise page copy");
-  assert.match(pageSource, /const socialDescription = "Scegli il tuo gelato LaB/, "Social cards should have short sharing copy");
+  assert.match(pageSource, /const siteDescription = copy\.siteDescription/, "Google description should be defined as localized page copy");
+  assert.match(pageSource, /const socialDescription = copy\.socialDescription/, "Social cards should have localized sharing copy");
   assert.match(pageSource, /<link rel="canonical" href=\{canonicalUrl\} \/>/, "Google should receive a canonical URL");
   assert.match(pageSource, /<meta name="robots" content="index, follow" \/>/, "Search engines should be allowed to index the page");
   assert.match(pageSource, /<meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" \/>/, "Googlebot should be allowed large previews and snippets");
@@ -92,8 +150,8 @@ test("sugar syrup sorbetto uses the white scoop photo", () => {
 });
 
 test("detail lists stay visually minimal", () => {
-  assert.match(pageSource, /<h3>Ingredienti completi<\/h3>/, "Ingredient list heading should remain present");
-  assert.match(pageSource, /<h3>Allergeni completi<\/h3>/, "Allergen list heading should remain present");
+  assert.match(pageSource, /<h3>\{copy\.fullIngredientsHeading\}<\/h3>/, "Ingredient list heading should remain present");
+  assert.match(pageSource, /<h3>\{copy\.fullAllergensHeading\}<\/h3>/, "Allergen list heading should remain present");
   assert.match(pageSource, /class="ingredient-list"/, "Ingredients should render as a list");
   assert.match(pageSource, /class="detail-allergen-list"/, "Allergens should render as a list");
   assert.doesNotMatch(pageSource, /detail-allergen[\s\S]*?allergen-chip/, "Detail allergens should avoid compact chip styling");

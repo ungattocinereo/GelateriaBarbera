@@ -160,11 +160,13 @@ a {
 }
 
 .language-button {
-  display: grid;
-  place-items: center;
-  min-width: 36px;
-  height: 32px;
-  padding: 0 var(--spacing-12);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 58px;
+  height: 34px;
+  padding: 0 11px 0 9px;
   border: 1px solid var(--color-pale-lavender);
   border-radius: var(--radius-buttons);
   background: var(--color-pure-white);
@@ -172,6 +174,8 @@ a {
   font-size: var(--text-caption);
   font-weight: var(--font-weight-semibold);
   line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
 }
 
 .language-button.active {
@@ -180,9 +184,49 @@ a {
   color: var(--color-pure-white);
 }
 
-.language-button:disabled:not(.active) {
-  color: var(--color-graphite);
-  opacity: 0.74;
+.language-flag {
+  display: inline-grid;
+  place-items: center;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  background: var(--color-snow-drift);
+  background-position: center;
+  background-size: cover;
+  box-shadow: inset 0 0 0 1px rgba(71, 28, 255, 0.08);
+  overflow: hidden;
+}
+
+.language-button.active .language-flag {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+.flag-it {
+  background-image: linear-gradient(90deg, #009246 0 33.33%, #ffffff 33.33% 66.66%, #ce2b37 66.66% 100%);
+}
+
+.flag-fr {
+  background-image: linear-gradient(90deg, #0055a4 0 33.33%, #ffffff 33.33% 66.66%, #ef4135 66.66% 100%);
+}
+
+.flag-zh {
+  background-color: #de2910;
+  background-image:
+    radial-gradient(circle at 34% 34%, #ffde00 0 12%, transparent 13%),
+    radial-gradient(circle at 56% 25%, #ffde00 0 4%, transparent 5%),
+    radial-gradient(circle at 63% 39%, #ffde00 0 4%, transparent 5%),
+    radial-gradient(circle at 61% 56%, #ffde00 0 4%, transparent 5%),
+    radial-gradient(circle at 50% 68%, #ffde00 0 4%, transparent 5%);
+}
+
+.flag-en {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'%3E%3Crect width='60' height='60' fill='%23012169'/%3E%3Cpath d='M0 0 60 60M60 0 0 60' stroke='%23fff' stroke-width='14'/%3E%3Cpath d='M0 0 60 60M60 0 0 60' stroke='%23c8102e' stroke-width='8'/%3E%3Cpath d='M30 0v60M0 30h60' stroke='%23fff' stroke-width='22'/%3E%3Cpath d='M30 0v60M0 30h60' stroke='%23c8102e' stroke-width='13'/%3E%3C/svg%3E");
+}
+
+.language-code {
+  display: inline-block;
+  min-width: 18px;
+  text-align: center;
 }
 
 main {
@@ -976,9 +1020,20 @@ main {
   }
 
   .language-button {
-    min-width: 32px;
+    min-width: 48px;
     height: 30px;
-    padding-inline: var(--spacing-8);
+    gap: 4px;
+    padding-inline: 7px;
+  }
+
+  .language-flag {
+    width: 17px;
+    height: 17px;
+    font-size: 12px;
+  }
+
+  .language-code {
+    min-width: 16px;
   }
 
   .hero {
