@@ -94,6 +94,7 @@ const translatedText: Record<string, Record<Locale, string>> = {
   "Caramello": l("Caramello", "Caramel", "焦糖", "Caramel"),
   "Arachide": l("Arachide", "Peanut", "花生", "Arachide"),
   "Crema alla Vaniglia": l("Crema alla Vaniglia", "Vanilla custard", "香草蛋奶冰淇淋", "Crème à la vanille"),
+  "Vaniglia": l("Vaniglia", "Vanilla", "香草冰淇淋", "Vanille"),
   "Caffè": l("Caffè", "Coffee", "咖啡", "Café"),
   "More di Gelso": l("More di Gelso", "Mulberries", "桑葚", "Mures de mûrier"),
   "Fragola sorbetto": l("Fragola sorbetto", "Strawberry sorbet", "草莓雪葩", "Sorbet fraise"),
@@ -120,7 +121,9 @@ const translatedText: Record<string, Record<Locale, string>> = {
   "ZUCCHERO D'UVA": l("ZUCCHERO D'UVA", "Grape sugar", "葡萄糖粉", "Sucre de raisin"),
   "CIOCC. BIANCO 35%": l("CIOCC. BIANCO 35%", "White chocolate 35%", "35% 白巧克力", "Chocolat blanc 35 %"),
   "LATTE FATTORIA GIULIA": l("LATTE FATTORIA GIULIA", "Fattoria Giulia milk", "Fattoria Giulia 牛奶", "Lait Fattoria Giulia"),
+  "LATTE FRESCO INTERO": l("LATTE FRESCO INTERO", "Fresh whole milk", "新鲜全脂牛奶", "Lait entier frais"),
   "PANNA 36M FATTORIA GIULIA": l("PANNA 36M FATTORIA GIULIA", "Fattoria Giulia 36M cream", "Fattoria Giulia 36M 奶油", "Crème 36M Fattoria Giulia"),
+  "PANNA 36M FATTORIA DONI": l("PANNA 36M FATTORIA DONI", "Fattoria Doni 36M cream", "Fattoria Doni 36M 奶油", "Crème 36M Fattoria Doni"),
   "SACCAROSIO": l("SACCAROSIO", "Sucrose", "蔗糖", "Saccharose"),
   "AGRIMONTANA CREMA EMILIO": l("AGRIMONTANA CREMA EMILIO", "Agrimontana Crema Emilio", "Agrimontana Crema Emilio", "Agrimontana Crema Emilio"),
   "LATTE SCREMATO IN POLVERE": l("LATTE SCREMATO IN POLVERE", "Skimmed milk powder", "脱脂奶粉", "Lait écrémé en poudre"),
@@ -222,62 +225,62 @@ export const allergenInfo: Record<
   latte: {
     label: t("Latte"),
     description: t("Latte e derivati"),
-    icon: "fa-solid fa-glass-water"
+    icon: "milk"
   },
   soia: {
     label: t("Soia"),
     description: t("Soia e derivati"),
-    icon: "fa-solid fa-seedling"
+    icon: "sprout"
   },
   "frutta-a-guscio": {
     label: t("Frutta a guscio"),
     description: t("Possibile frutta a guscio"),
-    icon: "fa-solid fa-circle"
+    icon: "nut"
   },
   mandorla: {
     label: t("Mandorla"),
     description: t("Mandorla, frutta a guscio"),
-    icon: "fa-solid fa-diamond"
+    icon: "diamond"
   },
   nocciola: {
     label: t("Nocciola"),
     description: t("Nocciola, frutta a guscio"),
-    icon: "fa-solid fa-circle-dot"
+    icon: "hazelnut"
   },
   pistacchio: {
     label: t("Pistacchio"),
     description: t("Pistacchio, frutta a guscio"),
-    icon: "fa-solid fa-leaf"
+    icon: "leaf"
   },
   cocco: {
     label: t("Cocco"),
     description: t("Cocco"),
-    icon: "fa-solid fa-certificate"
+    icon: "coconut"
   },
   uova: {
     label: t("Uova"),
     description: t("Uova e derivati"),
-    icon: "fa-solid fa-egg"
+    icon: "egg"
   },
   arachidi: {
     label: t("Arachidi"),
     description: t("Arachidi e derivati"),
-    icon: "fa-solid fa-spa"
+    icon: "peanut"
   },
   glutine: {
     label: t("Glutine"),
     description: t("Cereali contenenti glutine"),
-    icon: "fa-solid fa-wheat-awn"
+    icon: "wheat"
   },
   senape: {
     label: t("Senape"),
     description: t("Senape"),
-    icon: "fa-solid fa-jar"
+    icon: "jar"
   },
   sesamo: {
     label: t("Sesamo"),
     description: t("Semi di sesamo"),
-    icon: "fa-solid fa-grip"
+    icon: "seeds"
   }
 };
 
@@ -772,6 +775,23 @@ export const flavors: FlavorItem[] = [
       "PASTA VANIGLIA"
     ]),
     allergens: [contains("latte"), contains("uova"), mayContain("soia"), mayContain("frutta-a-guscio")],
+    iconSlug: "dessert",
+    theme: "vanilla"
+  },
+  {
+    id: "vaniglia",
+    category: "gelato",
+    name: t("Vaniglia"),
+    ingredients: t([
+      "LATTE FRESCO INTERO",
+      "PANNA 36M FATTORIA DONI",
+      "SACCAROSIO (ZUCCHERO)",
+      "PASTA VANIGLIA",
+      "DESTROSIO",
+      "AGRIMONTANA CREMA EMILIO",
+      "LATTE SCREMATO IN POLVERE"
+    ]),
+    allergens: [contains("latte"), mayContain("soia"), mayContain("frutta-a-guscio")],
     iconSlug: "dessert",
     theme: "vanilla"
   },

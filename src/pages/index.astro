@@ -10,7 +10,10 @@ import {
   type Category,
   type Locale
 } from "@data/flavors";
-import "@fortawesome/fontawesome-free/css/all.min.css";
+import Icon from "../components/Icon.astro";
+import { Image, Picture, getImage } from "astro:assets";
+import heroTextureImage from "../../gelato-texture.png";
+import logoImage from "../../logo-new.png";
 import socialPreviewImage from "../../images/stracciatella.png";
 import "../styles/global.css";
 
@@ -23,10 +26,16 @@ const siteDescription = copy.siteDescription;
 const socialDescription = copy.socialDescription;
 const socialImageAlt = copy.socialImageAlt;
 const canonicalUrl = new URL(currentLocale.path, Astro.site ?? Astro.url).toString();
-const socialImageUrl = new URL(socialPreviewImage.src, Astro.site ?? Astro.url).toString();
-const socialImageType = socialPreviewImage.format === "jpg" ? "image/jpeg" : `image/${socialPreviewImage.format}`;
-const socialImageWidth = socialPreviewImage.width.toString();
-const socialImageHeight = socialPreviewImage.height.toString();
+const socialPreview = await getImage({
+  src: socialPreviewImage,
+  width: 1024,
+  format: "jpg",
+  quality: 78
+});
+const socialImageUrl = new URL(socialPreview.src, Astro.site ?? Astro.url).toString();
+const socialImageType = "image/jpeg";
+const socialImageWidth = String(socialPreview.attributes.width);
+const socialImageHeight = String(socialPreview.attributes.height);
 const counts: Record<Category | "all", number> = {
   all: flavors.length,
   gelato: flavors.filter((flavor) => flavor.category === "gelato").length,
@@ -36,11 +45,11 @@ const counts: Record<Category | "all", number> = {
 const categories: (Category | "all")[] = ["all", "gelato", "sorbetto", "extra"];
 const flavorImageModules = import.meta.glob("../../images/*.{png,jpg,jpeg,webp}", {
   eager: true,
-  query: "?url",
   import: "default"
-}) as Record<string, string>;
-const flavorImageOverrides: Record<string, string | undefined> = {
-  "sciroppo-zucchero": flavorImageModules[`../../images/white-scoop.png`]
+}) as Record<string, ImageMetadata>;
+const flavorImageOverrides: Record<string, ImageMetadata | undefined> = {
+  "sciroppo-zucchero": flavorImageModules[`../../images/white-scoop.png`],
+  "vaniglia": flavorImageModules[`../../images/crema-vaniglia.png`]
 };
 const flavorImage = (id: string) =>
   flavorImageOverrides[id] ??
@@ -48,11 +57,24 @@ const flavorImage = (id: string) =>
   flavorImageModules[`../../images/${id}.jpg`] ??
   flavorImageModules[`../../images/${id}.jpeg`] ??
   flavorImageModules[`../../images/${id}.webp`] ??
-  "/gelato-texture.png";
-const flavorsWithImages = flavors.map((flavor) => ({
-  ...flavor,
-  imageSrc: flavorImage(flavor.id)
-}));
+  heroTextureImage;
+const flavorsWithImages = await Promise.all(
+  flavors.map(async (flavor) => {
+    const imageSrc = flavorImage(flavor.id);
+    const dialogImage = await getImage({
+      src: imageSrc,
+      width: 640,
+      format: "webp",
+      quality: 78
+    });
+
+    return {
+      ...flavor,
+      imageSrc,
+      dialogImage
+    };
+  })
+);
 ---
 
 <!doctype html>
@@ -89,7 +111,7 @@ const flavorsWithImages = flavors.map((flavor) => ({
   <body>
     <header class="site-header">
       <a class="brand" href={currentLocale.path} aria-label="LaB Laboratorio del Gelato">
-        <img src="/logo-new.png" alt="LaB Laboratorio del Gelato" />
+        <Image src={logoImage} alt="LaB Laboratorio del Gelato" width={64} format="webp" quality={82} />
         <span>
           <strong>{copy.brandTitle}</strong>
           <small>{copy.brandSubtitle}</small>
@@ -116,6 +138,17 @@ const flavorsWithImages = flavors.map((flavor) => ({
 
     <main>
       <section class="hero" aria-labelledby="page-title">
+        <Image
+          src={heroTextureImage}
+          alt=""
+          class="hero-background"
+          width={1600}
+          format="webp"
+          quality={76}
+          loading="eager"
+          fetchpriority="high"
+          aria-hidden="true"
+        />
         <div class="hero-copy">
           <h1 id="page-title">{copy.heroTitle}</h1>
           <p>{copy.heroIntro}</p>
@@ -139,7 +172,15 @@ const flavorsWithImages = flavors.map((flavor) => ({
           </div>
         </div>
         <div class="hero-mark" aria-label="LaB Laboratorio del Gelato">
-          <img class="hero-logo" src="/logo-new.png" alt="LaB Laboratorio del Gelato" width="420" height="420" />
+          <Image
+            class="hero-logo"
+            src={logoImage}
+            alt="LaB Laboratorio del Gelato"
+            width={420}
+            format="webp"
+            quality={82}
+            loading="eager"
+          />
         </div>
       </section>
 
@@ -161,7 +202,7 @@ const flavorsWithImages = flavors.map((flavor) => ({
         </div>
         <label class="search-field">
           <span class="sr-only">{copy.searchLabel}</span>
-          <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+          <Icon name="search" />
           <input type="search" placeholder={copy.searchPlaceholder} autocomplete="off" />
         </label>
       </section>
@@ -192,12 +233,15 @@ const flavorsWithImages = flavors.map((flavor) => ({
 
               <div class="flavor-topline">
                 <div class="flavor-photo">
-                  <img
+                  <Picture
                     src={flavor.imageSrc}
                     alt={copy.photoAlt(flavor.name[locale])}
+                    formats={["avif"]}
+                    fallbackFormat="webp"
+                    widths={[240, 360, 420]}
+                    sizes="(max-width: 620px) calc(50vw - 24px), (max-width: 1100px) calc(33vw - 24px), 320px"
+                    quality={76}
                     loading="lazy"
-                    width="420"
-                    height="320"
                     decoding="async"
                   />
                 </div>
@@ -217,7 +261,7 @@ const flavorsWithImages = flavors.map((flavor) => ({
                         return (
                           <span class:list={["allergen-chip", allergen.presence]} title={info.description[locale]}>
                             <span class="allergen-icon" aria-hidden="true">
-                              <i class={info.icon}></i>
+                              <Icon name={info.icon} />
                             </span>
                             <span>
                               <strong>{info.label[locale]}</strong>
@@ -244,17 +288,16 @@ const flavorsWithImages = flavors.map((flavor) => ({
                     data-dialog-close
                     aria-label={copy.closeFlavor(flavor.name[locale])}
                   >
-                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                    <Icon name="close" />
                   </button>
 
                   <div class="dialog-layout">
                     <div class="dialog-photo">
                       <img
-                        src={flavor.imageSrc}
+                        data-dialog-src={flavor.dialogImage.src}
                         alt={copy.photoAlt(flavor.name[locale])}
-                        loading="lazy"
-                        width="640"
-                        height="760"
+                        width={flavor.dialogImage.attributes.width}
+                        height={flavor.dialogImage.attributes.height}
                         decoding="async"
                       />
                     </div>
@@ -269,14 +312,14 @@ const flavorsWithImages = flavors.map((flavor) => ({
 
                       <div class:list={["dialog-facts", { "single-fact": flavor.allergens.length === 0 }]}>
                         <span>
-                          <i class="fa-solid fa-list-check" aria-hidden="true"></i>
+                          <Icon name="list" />
                           <strong>{flavor.ingredients[locale].length}</strong>
                           <small>{copy.ingredientFactLabel}</small>
                         </span>
                         {
                           flavor.allergens.length > 0 ? (
                             <span>
-                              <i class="fa-regular fa-file-lines" aria-hidden="true"></i>
+                              <Icon name="file" />
                               <strong>{flavor.allergens.length}</strong>
                               <small>{copy.allergenFactLabel}</small>
                             </span>
@@ -302,7 +345,7 @@ const flavorsWithImages = flavors.map((flavor) => ({
                                   return (
                                     <li class:list={["detail-allergen", allergen.presence]}>
                                       <span class="allergen-icon" aria-hidden="true">
-                                        <i class={info.icon}></i>
+                                        <Icon name={info.icon} />
                                       </span>
                                       <span>
                                         <strong>{info.label[locale]}</strong>
@@ -392,6 +435,11 @@ const flavorsWithImages = flavors.map((flavor) => ({
         trigger?.addEventListener("click", () => {
           if (!dialog) {
             return;
+          }
+
+          const dialogImage = dialog.querySelector<HTMLImageElement>("[data-dialog-src]");
+          if (dialogImage && !dialogImage.src) {
+            dialogImage.src = dialogImage.dataset.dialogSrc ?? "";
           }
 
           if (typeof dialog.showModal === "function") {

@@ -81,6 +81,17 @@ input {
   font: inherit;
 }
 
+.icon {
+  display: block;
+  width: 1em;
+  height: 1em;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
 button,
 a {
   -webkit-tap-highlight-color: transparent;
@@ -243,10 +254,26 @@ main {
   margin: 0 auto;
   padding: var(--spacing-56) var(--spacing-16) var(--spacing-40);
   overflow: hidden;
-  background:
-    linear-gradient(rgba(0, 0, 0, 0.34), rgba(0, 0, 0, 0.34)),
-    url("/gelato-texture.png") center / cover no-repeat;
+  background: var(--color-deep-violet);
   color: var(--color-pure-white);
+}
+
+.hero::after {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: rgba(0, 0, 0, 0.34);
+  content: "";
+  pointer-events: none;
+}
+
+.hero-background {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .hero-copy,
@@ -768,10 +795,11 @@ main {
   color: var(--color-deep-violet);
 }
 
-.dialog-facts span > i {
+.dialog-facts span > .icon {
   grid-row: span 2;
+  width: 18px;
+  height: 18px;
   color: var(--color-electric-indigo);
-  font-size: 18px;
 }
 
 .dialog-facts strong,

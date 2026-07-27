@@ -107,8 +107,11 @@ test("flavor cards expose full details through a tap disclosure", () => {
 test("cards use real flavor photos instead of external food icons", () => {
   assert.match(pageSource, /import\.meta\.glob/, "Flavor photos should be sourced from local image assets");
   assert.match(pageSource, /imageSrc/, "Flavor items should expose a resolved photo");
+  assert.match(pageSource, /<Picture/, "Compact cards should use Astro's responsive image pipeline");
+  assert.match(pageSource, /fallbackFormat="webp"/, "Compact cards should have an efficient WebP fallback");
   assert.match(pageSource, /class="flavor-photo"/, "Small cards should render a real product photo");
   assert.match(pageSource, /class="dialog-photo"/, "Large detail cards should render a real product photo");
+  assert.match(pageSource, /data-dialog-src=\{flavor\.dialogImage\.src\}/, "Dialog photos should defer their URL until the dialog opens");
   assert.doesNotMatch(pageSource, /icons8FoodIconUrl/, "Cards should not depend on external food icons");
 });
 
@@ -123,7 +126,7 @@ test("page exposes Google and social sharing metadata with stracciatella preview
   assert.match(pageSource, /<meta property="og:title" content=\{siteTitle\} \/>/, "Facebook should receive an Open Graph title");
   assert.match(pageSource, /<meta property="og:description" content=\{socialDescription\} \/>/, "Facebook should receive an Open Graph description");
   assert.match(pageSource, /<meta property="og:image" content=\{socialImageUrl\} \/>/, "Facebook should receive the stracciatella image URL");
-  assert.match(pageSource, /const socialImageType = socialPreviewImage\.format === "jpg" \? "image\/jpeg" : `image\/\$\{socialPreviewImage\.format\}`;/, "Open Graph image MIME should normalize jpg to image/jpeg");
+  assert.match(pageSource, /const socialImageType = "image\/jpeg";/, "Open Graph image should use the broadly supported JPEG format");
   assert.match(pageSource, /<meta property="og:image:type" content=\{socialImageType\} \/>/, "Facebook should receive a valid image MIME type");
   assert.match(pageSource, /<meta property="og:image:alt" content=\{socialImageAlt\} \/>/, "Facebook should receive accessible image alt text");
   assert.match(pageSource, /<meta name="twitter:card" content="summary_large_image" \/>/, "Twitter should receive a large-image card type");
@@ -149,6 +152,38 @@ test("sugar syrup sorbetto uses the white scoop photo", () => {
   );
 });
 
+test("vaniglia is a separate gelato card with cleaned ingredients and crema photo", () => {
+  const vaniglia = flavorBlock("vaniglia");
+  const expectedIngredients = [
+    "LATTE FRESCO INTERO",
+    "PANNA 36M FATTORIA DONI",
+    "SACCAROSIO (ZUCCHERO)",
+    "PASTA VANIGLIA",
+    "DESTROSIO",
+    "AGRIMONTANA CREMA EMILIO",
+    "LATTE SCREMATO IN POLVERE"
+  ];
+
+  assert.match(vaniglia, /name:\s*t\("Vaniglia"\)/, "Vaniglia should have its own public card name");
+  assert.match(vaniglia, /category:\s*"gelato"/, "Vaniglia should be listed as gelato");
+
+  let previousIngredientIndex = -1;
+  for (const ingredient of expectedIngredients) {
+    const ingredientIndex = vaniglia.indexOf(`"${ingredient}"`);
+    assert.ok(ingredientIndex > previousIngredientIndex, `Vaniglia should include ${ingredient} in screenshot order`);
+    previousIngredientIndex = ingredientIndex;
+  }
+
+  assert.doesNotMatch(vaniglia, /"TUORLO"|contains\("uova"\)|"VANIGLIA BACCHE"/, "Vaniglia should not inherit egg-only crema ingredients or allergens");
+  assert.match(dataSource, /"LATTE FRESCO INTERO":\s*l\("LATTE FRESCO INTERO", "Fresh whole milk"/, "The normalized milk ingredient should be translated");
+  assert.match(dataSource, /"PANNA 36M FATTORIA DONI":\s*l\("PANNA 36M FATTORIA DONI", "Fattoria Doni 36M cream"/, "The normalized cream ingredient should be translated");
+  assert.match(
+    pageSource,
+    /"vaniglia":\s*flavorImageModules\[`..\/..\/images\/crema-vaniglia\.png`\]/,
+    "Vaniglia should reuse the Crema alla Vaniglia photo"
+  );
+});
+
 test("detail lists stay visually minimal", () => {
   assert.match(pageSource, /<h3>\{copy\.fullIngredientsHeading\}<\/h3>/, "Ingredient list heading should remain present");
   assert.match(pageSource, /<h3>\{copy\.fullAllergensHeading\}<\/h3>/, "Allergen list heading should remain present");
@@ -160,12 +195,12 @@ test("detail lists stay visually minimal", () => {
 test("allergen icons render on compact and expanded cards", () => {
   assert.match(
     pageSource,
-    /<span class="allergen-icon" aria-hidden="true">[\s\S]*?<i class=\{info\.icon\}><\/i>[\s\S]*?<\/span>/,
+    /<span class="allergen-icon" aria-hidden="true">[\s\S]*?<Icon name=\{info\.icon\} \/>[\s\S]*?<\/span>/,
     "Compact allergen chips should render the configured allergen icon"
   );
   assert.match(
     pageSource,
-    /<li class:list=\{\["detail-allergen", allergen\.presence\]\}>[\s\S]*?<span class="allergen-icon" aria-hidden="true">[\s\S]*?<i class=\{info\.icon\}><\/i>/,
+    /<li class:list=\{\["detail-allergen", allergen\.presence\]\}>[\s\S]*?<span class="allergen-icon" aria-hidden="true">[\s\S]*?<Icon name=\{info\.icon\} \/>/,
     "Expanded allergen rows should render the configured allergen icon"
   );
 });
@@ -186,6 +221,14 @@ test("photo stages use stable enlarged sizing", () => {
     /\.dialog-photo img\s*\{[\s\S]*?transform:\s*scale\(1\.14\);/,
     "Expanded card images should be scaled up inside the dialog photo stage"
   );
+});
+
+test("hero and logos use optimized hashed image assets", () => {
+  assert.match(pageSource, /import heroTextureImage from "\.\.\/\.\.\/gelato-texture\.png";/, "Hero texture should enter Astro's asset pipeline");
+  assert.match(pageSource, /class="hero-background"[\s\S]*?format="webp"/, "Hero texture should render as WebP");
+  assert.match(pageSource, /import logoImage from "\.\.\/\.\.\/logo-new\.png";/, "Logo should enter Astro's asset pipeline");
+  assert.doesNotMatch(pageSource, /src="\/logo-new\.png"/, "Pages should not request the unversioned public logo");
+  assert.doesNotMatch(styleSource, /url\("\/gelato-texture\.png"\)/, "CSS should not request the unversioned public texture");
 });
 
 test("mobile keeps allergen icons visible", () => {
